@@ -4,33 +4,19 @@ import reflex as rx
 
 from rxconfig import config
 
+from dev.pages.login import login
+from dev.pages.dashboard import index
+from dev.pages.recovery_password import recovery_password
+
+from dev.core.bootstrap import bootstrap_app
 
 class State(rx.State):
     """The app state."""
 
-
-def index() -> rx.Component:
-    # Welcome Page (Index)
-    return rx.container(
-        rx.color_mode.button(position="top-right"),
-        rx.vstack(
-            rx.heading("Welcome to Reflex!", size="9"),
-            rx.text(
-                "Get started by editing ",
-                rx.code(f"{config.app_name}/{config.app_name}.py"),
-                size="5",
-            ),
-            rx.link(
-                rx.button("Check out our docs!"),
-                href="https://reflex.dev/docs/getting-started/introduction/",
-                is_external=True,
-            ),
-            spacing="5",
-            justify="center",
-            min_height="85vh",
-        ),
-    )
-
-
+# bootstrap_app()
+  
 app = rx.App()
 app.add_page(index)
+app.add_page(login)
+app.add_page(recovery_password, "/recovery-password")
+

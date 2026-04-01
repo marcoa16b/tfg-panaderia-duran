@@ -8,7 +8,7 @@ Descripción: este archivo es el encargado de realizar acciones en la base de da
 """
 
 from typing import Optional
-from reflex as rx
+import reflex as rx
 from sqlmodel import select
 from ..models.usuario import Usuario
 

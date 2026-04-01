@@ -1,10 +1,10 @@
 """
 Servicio de login
-Autor: Eikling Antonio Davila Mercado
+Autor: E
 
 Capa: Service / Domain logic
 
-Descripción: Este archivo incluye funciones relevantes como encriptación y verificación de contraseñas,
+Descripción: este archivo incluye funciones relevantes como encriptación y verificación de contraseñas,
 ademas de llamar a los metodos de repositorio (Base de datos).
 
 Notas:
@@ -47,3 +47,4 @@ class AuthService:
         if not cls.verify_password(password, usuario.password_hash):  
             return None  
         return usuario
+

@@ -1,6 +1,6 @@
 """ 
 Estado de autenticación
-Autor: Noemy Alejandra Alvarado Quesada & Eikling Davila Mercado
+Autor: N & E
 
 Capa: State / Application layer
 

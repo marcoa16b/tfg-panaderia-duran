@@ -5,3 +5,14 @@ __pycache__/
 assets/external/
 .states
 .venv
+
+# Alembic
+alembic/
+alembic.ini
+*.db
+
+# Agents
+**AGENTS.md
+skills-lock.json
+.agents
+.opencode
