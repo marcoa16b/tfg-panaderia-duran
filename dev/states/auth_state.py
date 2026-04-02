@@ -1,4 +1,4 @@
-""" 
+"""
 Estado de autenticación
 Autor: N & E
 
@@ -27,13 +27,13 @@ class AuthState(rx.State):
     # GETTERS & SETTERS -> por cada variable de la clase, debe haber un get y un set
     def get_email(self):
         return self.email
-    
+
     def set_email(self, email: str):
         self.email = email
 
     def get_password(self):
         return self.password
-    
+
     def set_password(self, password: str):
         self.password = password
 
@@ -59,7 +59,7 @@ class AuthState(rx.State):
 
         self.is_authenticated = True
         self.user_id = usuario.id
-        self.user_email = usuario.email
+        self.user_email = usuario.correo
         self.password = ""
         self.is_loading = False
 
@@ -75,21 +75,24 @@ class AuthState(rx.State):
         self.user_id = None
         self.user_email = ""
         return rx.redirect("/login")
-    
+
     # Este metodo es para la pagina de recuperación de contraseña
-    def send_recovery_email(self):  
-        self.clear_error()  
-        self.is_loading = True  
-        try:  
-            email = self.email.strip().lower()  
-            if not email:  
-                self.error_message = "Debes ingresar un correo electrónico."  
-                return  
-    
-            # TODO: Aquí llamas al service real de recuperación:  
-            # AuthService.request_password_recovery(email)  
-    
-            # Mensaje neutro por seguridad (no revelar si existe o no)  
-            return rx.toast("Si el correo existe, recibirás instrucciones para recuperar tu contraseña.", position="top-right",)  
-        finally:  
+    def send_recovery_email(self):
+        self.clear_error()
+        self.is_loading = True
+        try:
+            email = self.email.strip().lower()
+            if not email:
+                self.error_message = "Debes ingresar un correo electrónico."
+                return
+
+            # TODO: Aquí llamas al service real de recuperación:
+            # AuthService.request_password_recovery(email)
+
+            # Mensaje neutro por seguridad (no revelar si existe o no)
+            return rx.toast(
+                "Si el correo existe, recibirás instrucciones para recuperar tu contraseña.",
+                position="top-right",
+            )
+        finally:
             self.is_loading = False
