@@ -1,0 +1,45 @@
+services:
+  app:
+    build: .
+    container_name: panaderia-duran-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://panaderia_user:${DB_PASSWORD}@db:5432/panaderia_duran
+      SECRET_KEY: ${SECRET_KEY}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      DEBUG: ${DEBUG:-false}
+    depends_on:
+      db:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  db:
+    image: postgres:16-alpine
+    container_name: panaderia-duran-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: panaderia_duran
+      POSTGRES_USER: panaderia_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U panaderia_user -d panaderia_duran"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  pgdata:

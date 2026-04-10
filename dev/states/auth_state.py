@@ -8,9 +8,13 @@ Descripcion: Este es un archivo para gestionar el estado de autenticación de lo
 comunica el frontend con el backend (AuthService).
 """
 
+import logging
 from typing import Optional
+
 import reflex as rx
 from dev.services.auth_service import AuthService
+
+logger = logging.getLogger("dev.states.auth")
 
 
 class AuthState(rx.State):
@@ -46,13 +50,16 @@ class AuthState(rx.State):
         self.is_loading = True
 
         if not self.email.strip() or not self.password:
+            logger.warning("Intento de login con campos vacíos")
             self.error_message = "Email y contraseña son obligatorios."
             self.is_loading = False
             return
 
+        logger.info("Intento de login para: %s", self.email)
         usuario = AuthService.authenticate(self.email, self.password)
 
         if not usuario:
+            logger.warning("Login fallido para: %s", self.email)
             self.error_message = "Credenciales inválidas."
             self.is_loading = False
             return
@@ -62,11 +69,14 @@ class AuthState(rx.State):
         self.user_email = usuario.correo
         self.password = ""
         self.is_loading = False
+        logger.info(
+            "Login exitoso — usuario_id=%s, correo=%s", usuario.id, usuario.correo
+        )
 
         return rx.redirect("/")
 
     def logout(self):
-        print("sign out process")
+        logger.info("Cierre de sesión para usuario: %s", self.user_email)
         self.email = ""
         self.password = ""
         self.error_message = ""
@@ -83,8 +93,11 @@ class AuthState(rx.State):
         try:
             email = self.email.strip().lower()
             if not email:
+                logger.warning("Recuperación de contraseña con email vacío")
                 self.error_message = "Debes ingresar un correo electrónico."
                 return
+
+            logger.info("Solicitud de recuperación de contraseña para: %s", email)
 
             # TODO: Aquí llamas al service real de recuperación:
             # AuthService.request_password_recovery(email)

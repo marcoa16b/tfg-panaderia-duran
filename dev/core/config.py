@@ -8,3 +8,4 @@ ACCESS_TOKEN_EXPIRE_MINUTES: int = int(
 )
 APP_NAME: str = "Panaderia Duran"
 DEBUG: bool = os.environ.get("DEBUG", "true").lower() == "true"
+LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO").upper()
