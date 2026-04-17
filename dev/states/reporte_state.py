@@ -107,6 +107,10 @@ class ReporteState(rx.State):
     total_perdida: str = "0"
     cantidad_perdidas: int = 0
 
+    @rx.var
+    def existencias_bajo_stock(self) -> int:
+        return sum(1 for e in self.existencias if e.get("bajo_stock"))
+
     def on_load(self):
         """
         Inicializa las fechas de filtro al mes actual y carga el reporte.

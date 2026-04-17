@@ -21,9 +21,7 @@ def _product_row(p: dict) -> rx.Component:
         rx.table.cell(
             rx.badge(
                 p["stock_actual"],
-                color_scheme=rx.cond(
-                    p["stock_actual"] <= p["stock_minimo"], "red", "green"
-                ),
+                color_scheme=rx.cond(p["bajo_stock"], "red", "green"),
             ),
             width="12%",
         ),
@@ -31,8 +29,8 @@ def _product_row(p: dict) -> rx.Component:
         rx.table.cell(rx.text(p["ubicacion"], size="2", color="gray"), width="18%"),
         rx.table.cell(
             rx.badge(
-                rx.cond(p["activo"] == True, "Activo", "Inactivo"),
-                color_scheme=rx.cond(p["activo"] == True, "green", "gray"),
+                rx.cond(p["activo"], "Activo", "Inactivo"),
+                color_scheme=rx.cond(p["activo"], "green", "gray"),
             ),
             width="10%",
         ),
@@ -170,193 +168,188 @@ def _producto_form() -> rx.Component:
 
 
 def productos() -> rx.Component:
-    return rx.box(
-        base_layout(
-            rx.vstack(
+    return base_layout(
+        rx.vstack(
+            rx.hstack(
+                rx.heading("Productos", size="7", weight="bold"),
+                rx.spacer(),
+                rx.button(
+                    rx.icon("plus", size=16),
+                    "Nuevo producto",
+                    on_click=ProductoState.abrir_crear,
+                ),
+                width="100%",
+                align="center",
+            ),
+            rx.hstack(
                 rx.hstack(
-                    rx.heading("Productos", size="7", weight="bold"),
-                    rx.spacer(),
+                    rx.input(
+                        placeholder="Buscar productos...",
+                        value=ProductoState.search_query,
+                        on_change=ProductoState.set_search_query,
+                        size="2",
+                        width="250px",
+                    ),
                     rx.button(
-                        rx.icon("plus", size=16),
-                        "Nuevo producto",
-                        on_click=ProductoState.abrir_crear,
+                        rx.icon("search", size=14),
+                        variant="soft",
+                        on_click=ProductoState.buscar_productos,
                     ),
-                    width="100%",
-                    align="center",
+                    rx.button(
+                        rx.icon("x", size=14),
+                        variant="ghost",
+                        on_click=ProductoState.limpiar_filtros,
+                    ),
+                    spacing="2",
+                ),
+                rx.spacer(),
+                rx.select.root(
+                    rx.select.trigger(placeholder="Categoría", size="2"),
+                    rx.select.content(
+                        rx.select.item("Todas", value="0"),
+                        rx.foreach(
+                            ProductoState.categorias,
+                            lambda c: rx.select.item(
+                                c["nombre"], value=c["id"].to_string()
+                            ),
+                        ),
+                    ),
+                    on_change=ProductoState.filtrar_por_categoria,
                 ),
                 rx.hstack(
-                    rx.hstack(
-                        rx.input(
-                            placeholder="Buscar productos...",
-                            value=ProductoState.search_query,
-                            on_change=ProductoState.set_search_query,
-                            size="2",
-                            width="250px",
-                        ),
-                        rx.button(
-                            rx.icon("search", size=14),
-                            variant="soft",
-                            on_click=ProductoState.buscar_productos,
-                        ),
-                        rx.button(
-                            rx.icon("x", size=14),
-                            variant="ghost",
-                            on_click=ProductoState.limpiar_filtros,
-                        ),
-                        spacing="2",
+                    rx.text(
+                        ProductoState.total_productos.to_string() + " productos",
+                        size="2",
+                        color="gray",
                     ),
-                    rx.spacer(),
-                    rx.select.root(
-                        rx.select.trigger(placeholder="Categoría", size="2"),
-                        rx.select.content(
-                            rx.select.item("Todas", value="0"),
-                            rx.foreach(
-                                ProductoState.categorias,
-                                lambda c: rx.select.item(
-                                    c["nombre"], value=c["id"].to_string()
-                                ),
-                            ),
-                        ),
-                        on_change=ProductoState.filtrar_por_categoria,
-                    ),
-                    rx.hstack(
-                        rx.text(
-                            ProductoState.total_productos.to_string() + " productos",
-                            size="2",
-                            color="gray",
-                        ),
-                        spacing="2",
-                        align="center",
-                    ),
-                    width="100%",
+                    spacing="2",
                     align="center",
                 ),
-                rx.box(
-                    rx.table.root(
-                        rx.table.header(
-                            rx.table.row(
-                                *[
-                                    rx.table.column_header_cell(
-                                        col["label"], width=col["width"]
-                                    )
-                                    for col in PRODUCTO_COLUMNS
-                                ]
-                            )
-                        ),
-                        rx.table.body(
-                            rx.foreach(ProductoState.productos, _product_row),
-                        ),
-                        width="100%",
+                width="100%",
+                align="center",
+            ),
+            rx.box(
+                rx.table.root(
+                    rx.table.header(
+                        rx.table.row(
+                            *[
+                                rx.table.column_header_cell(
+                                    col["label"], width=col["width"]
+                                )
+                                for col in PRODUCTO_COLUMNS
+                            ]
+                        )
                     ),
-                    rx.hstack(
-                        rx.text(
-                            "Página "
-                            + ProductoState.pagina_actual.to_string()
-                            + " de "
-                            + ProductoState.total_paginas.to_string(),
-                            size="2",
-                            color="gray",
-                        ),
-                        rx.spacer(),
-                        rx.hstack(
-                            rx.button(
-                                rx.icon("chevron-left", size=16),
-                                variant="outline",
-                                size="1",
-                                on_click=ProductoState.pagina_anterior,
-                            ),
-                            rx.button(
-                                rx.icon("chevron-right", size=16),
-                                variant="outline",
-                                size="1",
-                                on_click=ProductoState.pagina_siguiente,
-                            ),
-                            spacing="2",
-                            align="center",
-                        ),
-                        width="100%",
-                        padding_top="0.75em",
-                        align="center",
+                    rx.table.body(
+                        rx.foreach(ProductoState.productos, _product_row),
                     ),
                     width="100%",
                 ),
-                rx.dialog.root(
-                    rx.dialog.content(
-                        rx.dialog.title(
-                            rx.cond(
-                                ProductoState.modo_editar,
-                                "Editar producto",
-                                "Nuevo producto",
-                            )
-                        ),
-                        rx.dialog.description(
-                            rx.cond(
-                                ProductoState.modo_editar,
-                                "Modifica los datos del producto.",
-                                "Completa los datos para crear un nuevo producto.",
-                            ),
-                        ),
-                        _producto_form(),
-                        rx.hstack(
-                            rx.button(
-                                "Cancelar",
-                                variant="soft",
-                                color_scheme="gray",
-                                on_click=ProductoState.cerrar_dialog,
-                            ),
-                            rx.button(
-                                rx.cond(
-                                    ProductoState.modo_editar,
-                                    "Actualizar",
-                                    "Crear producto",
-                                ),
-                                on_click=ProductoState.guardar_producto,
-                            ),
-                            spacing="3",
-                            justify="end",
-                            padding_top="1em",
-                            width="100%",
-                        ),
-                        max_width="500px",
+                rx.hstack(
+                    rx.text(
+                        "Página "
+                        + ProductoState.pagina_actual.to_string()
+                        + " de "
+                        + ProductoState.total_paginas.to_string(),
+                        size="2",
+                        color="gray",
                     ),
-                    open=ProductoState.dialog_open,
-                    on_open_change=ProductoState.cerrar_dialog,
-                ),
-                rx.dialog.root(
-                    rx.dialog.content(
-                        rx.dialog.title("Desactivar producto"),
-                        rx.dialog.description(
-                            "¿Desactivar ",
-                            rx.text(
-                                ProductoState.confirm_producto_nombre, weight="bold"
-                            ),
-                            "? El producto se marcará como inactivo pero no se eliminará.",
+                    rx.spacer(),
+                    rx.hstack(
+                        rx.button(
+                            rx.icon("chevron-left", size=16),
+                            variant="outline",
+                            size="1",
+                            on_click=ProductoState.pagina_anterior,
                         ),
-                        rx.hstack(
-                            rx.button(
-                                "Cancelar",
-                                variant="soft",
-                                color_scheme="gray",
-                                on_click=ProductoState.cerrar_confirm,
-                            ),
-                            rx.button(
-                                "Desactivar",
-                                color_scheme="orange",
-                                on_click=ProductoState.ejecutar_desactivar,
-                            ),
-                            spacing="3",
-                            justify="end",
-                            padding_top="1em",
-                            width="100%",
+                        rx.button(
+                            rx.icon("chevron-right", size=16),
+                            variant="outline",
+                            size="1",
+                            on_click=ProductoState.pagina_siguiente,
                         ),
-                        max_width="400px",
+                        spacing="2",
+                        align="center",
                     ),
-                    open=ProductoState.confirm_open,
-                    on_open_change=ProductoState.cerrar_confirm,
+                    width="100%",
+                    padding_top="0.75em",
+                    align="center",
                 ),
-                spacing="5",
                 width="100%",
             ),
+            rx.dialog.root(
+                rx.dialog.content(
+                    rx.dialog.title(
+                        rx.cond(
+                            ProductoState.modo_editar,
+                            "Editar producto",
+                            "Nuevo producto",
+                        )
+                    ),
+                    rx.dialog.description(
+                        rx.cond(
+                            ProductoState.modo_editar,
+                            "Modifica los datos del producto.",
+                            "Completa los datos para crear un nuevo producto.",
+                        ),
+                    ),
+                    _producto_form(),
+                    rx.hstack(
+                        rx.button(
+                            "Cancelar",
+                            variant="soft",
+                            color_scheme="gray",
+                            on_click=ProductoState.cerrar_dialog,
+                        ),
+                        rx.button(
+                            rx.cond(
+                                ProductoState.modo_editar,
+                                "Actualizar",
+                                "Crear producto",
+                            ),
+                            on_click=ProductoState.guardar_producto,
+                        ),
+                        spacing="3",
+                        justify="end",
+                        padding_top="1em",
+                        width="100%",
+                    ),
+                    max_width="500px",
+                ),
+                open=ProductoState.dialog_open,
+                on_open_change=ProductoState.cerrar_dialog,
+            ),
+            rx.dialog.root(
+                rx.dialog.content(
+                    rx.dialog.title("Desactivar producto"),
+                    rx.dialog.description(
+                        "¿Desactivar ",
+                        rx.text(ProductoState.confirm_producto_nombre, weight="bold"),
+                        "? El producto se marcará como inactivo pero no se eliminará.",
+                    ),
+                    rx.hstack(
+                        rx.button(
+                            "Cancelar",
+                            variant="soft",
+                            color_scheme="gray",
+                            on_click=ProductoState.cerrar_confirm,
+                        ),
+                        rx.button(
+                            "Desactivar",
+                            color_scheme="orange",
+                            on_click=ProductoState.ejecutar_desactivar,
+                        ),
+                        spacing="3",
+                        justify="end",
+                        padding_top="1em",
+                        width="100%",
+                    ),
+                    max_width="400px",
+                ),
+                open=ProductoState.confirm_open,
+                on_open_change=ProductoState.cerrar_confirm,
+            ),
+            spacing="5",
+            width="100%",
         ),
-        on_load=ProductoState.load_productos,
     )

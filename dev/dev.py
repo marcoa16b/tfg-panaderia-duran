@@ -22,6 +22,13 @@ from dev.pages.demo_components import demo_components
 
 from dev.core.bootstrap import bootstrap_app
 
+from dev.states.dashboard_state import DashboardState
+from dev.states.producto_state import ProductoState
+from dev.states.entrada_salida_state import EntradaSalidaState
+from dev.states.receta_state import RecetaState
+from dev.states.produccion_state import ProduccionState
+from dev.states.reporte_state import ReporteState
+
 setup_logging()
 logger = logging.getLogger("dev")
 
@@ -33,15 +40,15 @@ class State(rx.State):
 bootstrap_app()
 
 app = rx.App()
-app.add_page(index)
+app.add_page(index, on_load=DashboardState.load_dashboard)
 app.add_page(login)
 app.add_page(recovery_password, "/recovery-password")
-app.add_page(productos, "/productos")
-app.add_page(entradas, "/entradas")
-app.add_page(salidas, "/salidas")
-app.add_page(recetas, "/recetas")
-app.add_page(produccion_diaria, "/produccion-diaria")
-app.add_page(alertas, "/alertas")
-app.add_page(estadisticas, "/estadisticas")
-app.add_page(reportes, "/reportes")
+app.add_page(productos, "/productos", on_load=ProductoState.load_productos)
+app.add_page(entradas, "/entradas", on_load=EntradaSalidaState.on_load)
+app.add_page(salidas, "/salidas", on_load=EntradaSalidaState.on_load)
+app.add_page(recetas, "/recetas", on_load=RecetaState.on_load)
+app.add_page(produccion_diaria, "/produccion-diaria", on_load=ProduccionState.on_load)
+app.add_page(alertas, "/alertas", on_load=DashboardState.load_dashboard)
+app.add_page(estadisticas, "/estadisticas", on_load=ReporteState.on_load)
+app.add_page(reportes, "/reportes", on_load=ReporteState.on_load)
 app.add_page(demo_components, "/demo-components")

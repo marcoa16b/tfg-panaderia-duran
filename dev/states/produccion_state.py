@@ -109,13 +109,14 @@ class ProduccionState(rx.State):
     error_message: str = ""
 
     dialog_open: bool = False
-    form_receta_id: Optional[int] = None
+    form_receta_id: str = ""
     form_cantidad: str = "1"
     form_fecha: str = ""
     form_observaciones: str = ""
 
     verificacion_open: bool = False
     verificacion_resultado: dict = {}
+    verificacion_detalle: list[dict] = []
     verificacion_receta_nombre: str = ""
 
     recetas: list[dict] = []
@@ -123,6 +124,7 @@ class ProduccionState(rx.State):
 
     detalle_open: bool = False
     detalle_produccion: dict = {}
+    detalle_lotes: list[dict] = []
 
     fecha_filtro_inicio: str = ""
     fecha_filtro_fin: str = ""
@@ -198,7 +200,7 @@ class ProduccionState(rx.State):
         Selecciona la primera receta disponible, limpia el formulario
         y carga los ingredientes de la receta seleccionada.
         """
-        self.form_receta_id = self.recetas[0]["id"] if self.recetas else None
+        self.form_receta_id = str(self.recetas[0]["id"]) if self.recetas else ""
         self.form_cantidad = "1"
         self.form_observaciones = ""
         self.form_fecha = date.today().isoformat()
@@ -206,7 +208,7 @@ class ProduccionState(rx.State):
         self.error_message = ""
         self.dialog_open = True
         if self.form_receta_id:
-            self._load_ingredientes_receta(self.form_receta_id)
+            self._load_ingredientes_receta(int(self.form_receta_id))
 
     def cerrar_dialog(self):
         """Cierra el diálogo de registro sin guardar."""
@@ -220,9 +222,9 @@ class ProduccionState(rx.State):
         Args:
             receta_id: ID de la receta seleccionada (como string desde el select).
         """
-        self.form_receta_id = int(receta_id) if receta_id else None
+        self.form_receta_id = receta_id
         if self.form_receta_id:
-            self._load_ingredientes_receta(self.form_receta_id)
+            self._load_ingredientes_receta(int(self.form_receta_id))
 
     def _load_ingredientes_receta(self, receta_id: int):
         """
@@ -264,24 +266,25 @@ class ProduccionState(rx.State):
             return rx.toast.error("La cantidad debe ser mayor a 0.")
 
         try:
+            receta_id_int = int(self.form_receta_id)
             result = RecetaService.verificar_insumos_disponibles(
-                self.form_receta_id, cantidad
+                receta_id_int, cantidad
             )
-            receta = RecetaService.get_by_id(self.form_receta_id)
+            receta = RecetaService.get_by_id(receta_id_int)
             self.verificacion_receta_nombre = receta.nombre
+            self.verificacion_detalle = [
+                {
+                    "nombre": d["nombre"],
+                    "cantidad_necesaria": str(d["cantidad_necesaria"]),
+                    "stock_actual": str(d["stock_actual"]),
+                    "suficiente": d["suficiente"],
+                    "faltante": str(d["faltante"]),
+                }
+                for d in result["detalle"]
+            ]
             self.verificacion_resultado = {
                 "disponible": result["disponible"],
                 "cantidad": str(cantidad),
-                "detalle": [
-                    {
-                        "nombre": d["nombre"],
-                        "cantidad_necesaria": str(d["cantidad_necesaria"]),
-                        "stock_actual": str(d["stock_actual"]),
-                        "suficiente": d["suficiente"],
-                        "faltante": str(d["faltante"]),
-                    }
-                    for d in result["detalle"]
-                ],
             }
             self.verificacion_open = True
         except Exception as e:
@@ -329,7 +332,7 @@ class ProduccionState(rx.State):
 
         try:
             ProduccionService.registrar_produccion(
-                receta_id=self.form_receta_id,
+                receta_id=int(self.form_receta_id),
                 fecha=date.fromisoformat(self.form_fecha),
                 cantidad_producida=cantidad,
                 observaciones=self.form_observaciones.strip() or None,
@@ -362,19 +365,19 @@ class ProduccionState(rx.State):
             detalles = result["detalles"]
             receta = RecetaService.get_by_id(produccion.receta_id)
 
+            self.detalle_lotes = [
+                {
+                    "lote_id": d.lote_id,
+                    "cantidad": str(d.cantidad),
+                }
+                for d in detalles
+            ]
             self.detalle_produccion = {
                 "id": produccion.id,
                 "receta_nombre": receta.nombre,
                 "fecha": str(produccion.fecha),
                 "cantidad_producida": str(produccion.cantidad_producida),
                 "observaciones": produccion.observaciones or "",
-                "detalles": [
-                    {
-                        "lote_id": d.lote_id,
-                        "cantidad": str(d.cantidad),
-                    }
-                    for d in detalles
-                ],
             }
             self.detalle_open = True
         except Exception as e:
