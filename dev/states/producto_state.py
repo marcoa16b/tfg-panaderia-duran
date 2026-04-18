@@ -116,8 +116,8 @@ class ProductoState(rx.State):
 
     form_nombre: str = ""
     form_descripcion: str = ""
-    form_categoria_id: Optional[int] = None
-    form_unidad_medida_id: Optional[int] = None
+    form_categoria_id: str = ""
+    form_unidad_medida_id: str = ""
     form_stock_minimo: str = "0"
     form_ubicacion: str = ""
 
@@ -213,8 +213,8 @@ class ProductoState(rx.State):
         self.editando_id = None
         self.form_nombre = ""
         self.form_descripcion = ""
-        self.form_categoria_id = None
-        self.form_unidad_medida_id = None
+        self.form_categoria_id = ""
+        self.form_unidad_medida_id = ""
         self.form_stock_minimo = "0"
         self.form_ubicacion = ""
         self.error_message = ""
@@ -238,8 +238,12 @@ class ProductoState(rx.State):
             self.editando_id = producto_id
             self.form_nombre = producto.nombre
             self.form_descripcion = producto.descripcion or ""
-            self.form_categoria_id = producto.categoria_id
-            self.form_unidad_medida_id = producto.unidad_medida_id
+            self.form_categoria_id = (
+                str(producto.categoria_id) if producto.categoria_id else ""
+            )
+            self.form_unidad_medida_id = (
+                str(producto.unidad_medida_id) if producto.unidad_medida_id else ""
+            )
             self.form_stock_minimo = str(producto.stock_minimo)
             self.form_ubicacion = producto.ubicacion or ""
             self.error_message = ""
@@ -284,13 +288,19 @@ class ProductoState(rx.State):
 
         try:
             stock_minimo = Decimal(self.form_stock_minimo or "0")
+            categoria_id = (
+                int(self.form_categoria_id) if self.form_categoria_id else None
+            )
+            unidad_medida_id = (
+                int(self.form_unidad_medida_id) if self.form_unidad_medida_id else None
+            )
             if self.modo_editar and self.editando_id:
                 ProductoService.update(
                     self.editando_id,
                     nombre=self.form_nombre.strip(),
                     descripcion=self.form_descripcion.strip() or None,
-                    categoria_id=self.form_categoria_id,
-                    unidad_medida_id=self.form_unidad_medida_id,
+                    categoria_id=categoria_id,
+                    unidad_medida_id=unidad_medida_id,
                     stock_minimo=stock_minimo,
                     ubicacion=self.form_ubicacion.strip() or None,
                 )
@@ -299,8 +309,8 @@ class ProductoState(rx.State):
                 ProductoService.create(
                     nombre=self.form_nombre.strip(),
                     descripcion=self.form_descripcion.strip() or None,
-                    categoria_id=self.form_categoria_id,
-                    unidad_medida_id=self.form_unidad_medida_id,
+                    categoria_id=categoria_id,
+                    unidad_medida_id=unidad_medida_id,
                     stock_minimo=stock_minimo,
                     ubicacion=self.form_ubicacion.strip() or None,
                 )
@@ -408,6 +418,7 @@ class ProductoState(rx.State):
             "unidad_medida_id": p.unidad_medida_id,
             "stock_actual": str(p.stock_actual),
             "stock_minimo": str(p.stock_minimo),
+            "bajo_stock": p.stock_actual <= p.stock_minimo,
             "ubicacion": p.ubicacion or "",
             "activo": p.activo,
         }

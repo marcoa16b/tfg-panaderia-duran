@@ -242,6 +242,7 @@ class InventarioService:
         if not detalles_data:
             raise ValidationException("La salida debe tener al menos un detalle")
 
+        lote_to_producto: dict[int, int] = {}
         for i, detalle in enumerate(detalles_data):
             if "lote_id" not in detalle or "cantidad" not in detalle:
                 raise ValidationException(
@@ -265,6 +266,8 @@ class InventarioService:
                     f"Detalle {i + 1}: cantidad ({cantidad}) excede stock del lote ({stock_lote})"
                 )
 
+            lote_to_producto[lote.id] = lote.producto_id  # type: ignore[index]
+
         salida_data = {
             "tipo_id": tipo_id,
             "fecha": fecha,
@@ -276,7 +279,8 @@ class InventarioService:
 
         for detalle in result["detalles"]:
             cantidad_negativa = -abs(detalle.cantidad)
-            ProductoRepository.update_stock(detalle.lote.producto_id, cantidad_negativa)
+            producto_id = lote_to_producto[detalle.lote_id]
+            ProductoRepository.update_stock(producto_id, cantidad_negativa)
 
         logger.info(
             "Salida registrada — id=%s, detalles=%s, stock descontado",

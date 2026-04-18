@@ -120,7 +120,7 @@ class RecetaState(rx.State):
 
     form_nombre: str = ""
     form_descripcion: str = ""
-    form_producto_id: Optional[int] = None
+    form_producto_id: str = ""
     form_ingredientes: list[dict] = []
 
     confirm_open: bool = False
@@ -129,9 +129,11 @@ class RecetaState(rx.State):
 
     detalle_open: bool = False
     detalle_receta: dict = {}
+    detalle_ingredientes: list[dict] = []
 
     disponibilidad_open: bool = False
     disponibilidad_resultado: dict = {}
+    disponibilidad_detalle: list[dict] = []
     disponibilidad_cantidad: str = "1"
 
     productos: list[dict] = []
@@ -206,7 +208,7 @@ class RecetaState(rx.State):
         self.editando_id = None
         self.form_nombre = ""
         self.form_descripcion = ""
-        self.form_producto_id = None
+        self.form_producto_id = ""
         self.form_ingredientes = [{"producto_id": None, "cantidad": ""}]
         self.error_message = ""
         self.dialog_open = True
@@ -229,7 +231,9 @@ class RecetaState(rx.State):
             self.editando_id = receta_id
             self.form_nombre = receta.nombre
             self.form_descripcion = receta.descripcion or ""
-            self.form_producto_id = receta.producto_id
+            self.form_producto_id = (
+                str(receta.producto_id) if receta.producto_id else ""
+            )
             self.form_ingredientes = [
                 {"producto_id": d.producto_id, "cantidad": str(d.cantidad)}
                 for d in detalles
@@ -331,12 +335,13 @@ class RecetaState(rx.State):
             )
 
         try:
+            producto_id = int(self.form_producto_id) if self.form_producto_id else None
             if self.modo_editar and self.editando_id:
                 RecetaService.update(
                     self.editando_id,
                     nombre=self.form_nombre.strip(),
                     descripcion=self.form_descripcion.strip() or None,
-                    producto_id=self.form_producto_id,
+                    producto_id=producto_id,
                 )
                 RecetaService.update_ingredientes(self.editando_id, ingredientes_data)
                 msg = "Receta actualizada correctamente."
@@ -344,7 +349,7 @@ class RecetaState(rx.State):
                 RecetaService.create(
                     nombre=self.form_nombre.strip(),
                     descripcion=self.form_descripcion.strip() or None,
-                    producto_id=self.form_producto_id,
+                    producto_id=producto_id,
                     ingredientes=ingredientes_data,
                 )
                 msg = "Receta creada correctamente."
@@ -417,18 +422,18 @@ class RecetaState(rx.State):
             result = RecetaService.get_with_detalles(receta_id)
             receta = result["receta"]
             detalles = result["detalles"]
+            self.detalle_ingredientes = [
+                {
+                    "id": d.id,
+                    "producto_id": d.producto_id,
+                    "cantidad": str(d.cantidad),
+                }
+                for d in detalles
+            ]
             self.detalle_receta = {
                 "id": receta.id,
                 "nombre": receta.nombre,
                 "descripcion": receta.descripcion or "",
-                "ingredientes": [
-                    {
-                        "id": d.id,
-                        "producto_id": d.producto_id,
-                        "cantidad": str(d.cantidad),
-                    }
-                    for d in detalles
-                ],
             }
             self.detalle_open = True
         except Exception as e:
@@ -482,19 +487,19 @@ class RecetaState(rx.State):
             result = RecetaService.verificar_insumos_disponibles(
                 self.editando_id, cantidad
             )
+            self.disponibilidad_detalle = [
+                {
+                    "producto_id": d["producto_id"],
+                    "nombre": d["nombre"],
+                    "cantidad_necesaria": str(d["cantidad_necesaria"]),
+                    "stock_actual": str(d["stock_actual"]),
+                    "suficiente": d["suficiente"],
+                    "faltante": str(d["faltante"]),
+                }
+                for d in result["detalle"]
+            ]
             self.disponibilidad_resultado = {
                 "disponible": result["disponible"],
-                "detalle": [
-                    {
-                        "producto_id": d["producto_id"],
-                        "nombre": d["nombre"],
-                        "cantidad_necesaria": str(d["cantidad_necesaria"]),
-                        "stock_actual": str(d["stock_actual"]),
-                        "suficiente": d["suficiente"],
-                        "faltante": str(d["faltante"]),
-                    }
-                    for d in result["detalle"]
-                ],
             }
         except Exception as e:
             logger.error("Error verificando: %s", str(e))

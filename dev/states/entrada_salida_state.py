@@ -124,14 +124,14 @@ class EntradaSalidaState(rx.State):
     dialog_entrada_open: bool = False
     dialog_salida_open: bool = False
 
-    form_entrada_tipo_id: Optional[int] = None
-    form_entrada_proveedor_id: Optional[int] = None
+    form_entrada_tipo_id: str = ""
+    form_entrada_proveedor_id: str = ""
     form_entrada_fecha: str = ""
     form_entrada_factura: str = ""
     form_entrada_observaciones: str = ""
     form_entrada_lotes: list[dict] = []
 
-    form_salida_tipo_id: Optional[int] = None
+    form_salida_tipo_id: str = ""
     form_salida_fecha: str = ""
     form_salida_observaciones: str = ""
     form_salida_detalles: list[dict] = []
@@ -144,8 +144,10 @@ class EntradaSalidaState(rx.State):
 
     detalle_entrada_open: bool = False
     detalle_entrada: dict = {}
+    detalle_entrada_lotes: list[dict] = []
     detalle_salida_open: bool = False
     detalle_salida: dict = {}
+    detalle_salida_detalles: list[dict] = []
 
     def set_tab(self, tab: str):
         """
@@ -239,9 +241,9 @@ class EntradaSalidaState(rx.State):
         e inicializa la lista de lotes con un lote vacío.
         """
         self.form_entrada_tipo_id = (
-            self.tipos_entrada[0]["id"] if self.tipos_entrada else None
+            str(self.tipos_entrada[0]["id"]) if self.tipos_entrada else ""
         )
-        self.form_entrada_proveedor_id = None
+        self.form_entrada_proveedor_id = ""
         self.form_entrada_factura = ""
         self.form_entrada_observaciones = ""
         self.form_entrada_lotes = [
@@ -381,10 +383,14 @@ class EntradaSalidaState(rx.State):
 
         try:
             InventarioService.registrar_entrada(
-                tipo_id=self.form_entrada_tipo_id,
+                tipo_id=int(self.form_entrada_tipo_id)
+                if self.form_entrada_tipo_id
+                else None,
                 fecha=date.fromisoformat(self.form_entrada_fecha),
                 lotes_data=lotes_data,
-                proveedor_id=self.form_entrada_proveedor_id,
+                proveedor_id=int(self.form_entrada_proveedor_id)
+                if self.form_entrada_proveedor_id
+                else None,
                 numero_factura=self.form_entrada_factura.strip() or None,
                 observaciones=self.form_entrada_observaciones.strip() or None,
             )
@@ -405,7 +411,7 @@ class EntradaSalidaState(rx.State):
         carga lotes disponibles e inicializa un detalle vacío.
         """
         self.form_salida_tipo_id = (
-            self.tipos_salida[0]["id"] if self.tipos_salida else None
+            str(self.tipos_salida[0]["id"]) if self.tipos_salida else ""
         )
         self.form_salida_observaciones = ""
         self.form_salida_detalles = [{"lote_id": None, "cantidad": "", "motivo": ""}]
@@ -519,7 +525,9 @@ class EntradaSalidaState(rx.State):
 
         try:
             InventarioService.registrar_salida(
-                tipo_id=self.form_salida_tipo_id,
+                tipo_id=int(self.form_salida_tipo_id)
+                if self.form_salida_tipo_id
+                else None,
                 fecha=date.fromisoformat(self.form_salida_fecha),
                 detalles_data=detalles_data,
                 observaciones=self.form_salida_observaciones.strip() or None,
@@ -547,23 +555,23 @@ class EntradaSalidaState(rx.State):
             result = InventarioService.get_entrada_with_lotes(entrada_id)
             entrada = result["entrada"]
             lotes = result["lotes"]
+            self.detalle_entrada_lotes = [
+                {
+                    "id": l.id,
+                    "producto_id": l.producto_id,
+                    "cantidad": str(l.cantidad),
+                    "codigo_lote": l.codigo_lote or "",
+                    "fecha_vencimiento": str(l.fecha_vencimiento)
+                    if l.fecha_vencimiento
+                    else "N/A",
+                }
+                for l in lotes
+            ]
             self.detalle_entrada = {
                 "id": entrada.id,
                 "fecha": str(entrada.fecha),
                 "factura": entrada.numero_factura or "N/A",
                 "observaciones": entrada.observaciones or "",
-                "lotes": [
-                    {
-                        "id": l.id,
-                        "producto_id": l.producto_id,
-                        "cantidad": str(l.cantidad),
-                        "codigo_lote": l.codigo_lote or "",
-                        "fecha_vencimiento": str(l.fecha_vencimiento)
-                        if l.fecha_vencimiento
-                        else "N/A",
-                    }
-                    for l in lotes
-                ],
             }
             self.detalle_entrada_open = True
         except Exception as e:
@@ -588,19 +596,19 @@ class EntradaSalidaState(rx.State):
             result = InventarioService.get_salida_with_detalles(salida_id)
             salida = result["salida"]
             detalles = result["detalles"]
+            self.detalle_salida_detalles = [
+                {
+                    "id": d.id,
+                    "lote_id": d.lote_id,
+                    "cantidad": str(d.cantidad),
+                    "motivo": d.motivo or "",
+                }
+                for d in detalles
+            ]
             self.detalle_salida = {
                 "id": salida.id,
                 "fecha": str(salida.fecha),
                 "observaciones": salida.observaciones or "",
-                "detalles": [
-                    {
-                        "id": d.id,
-                        "lote_id": d.lote_id,
-                        "cantidad": str(d.cantidad),
-                        "motivo": d.motivo or "",
-                    }
-                    for d in detalles
-                ],
             }
             self.detalle_salida_open = True
         except Exception as e:
