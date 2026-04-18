@@ -79,8 +79,8 @@ def _entrada_row(e: dict) -> rx.Component:
     return rx.table.row(
         rx.table.cell(rx.text(e.get("fecha", ""), size="2")),
         rx.table.cell(rx.text(e.get("tipo", ""), size="2")),
-        rx.table.cell(rx.text(e.get("factura", ""), size="2", color="gray")),
-        rx.table.cell(rx.text(e.get("total_lotes", "0"), size="2")),
+        rx.table.cell(rx.text(e.get("numero_factura", ""), size="2", color="gray")),
+        rx.table.cell(rx.text(e.get("total_cantidad", "0"), size="2")),
         rx.table.cell(
             rx.hstack(
                 rx.button(

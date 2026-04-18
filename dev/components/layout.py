@@ -71,7 +71,15 @@ def _authenticated_layout(*children) -> rx.Component:
 
 def _guest_layout(*children) -> rx.Component:
     return rx.box(
-        *children,
+        # *children,
+        rx.vstack(
+            rx.text("Usuario no autenticado"),
+            rx.button(
+                "Ir a login",
+                on_click=rx.redirect("/login"),
+            ),
+            class_name="flex flex-col items-center justify-center min-h-screen",
+        ),
         width="100%",
         min_height="100vh",
     )

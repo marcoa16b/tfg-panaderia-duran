@@ -74,7 +74,7 @@ def _salida_row(s: dict) -> rx.Component:
         rx.table.cell(rx.text(s.get("fecha", ""), size="2")),
         rx.table.cell(rx.text(s.get("tipo", ""), size="2")),
         rx.table.cell(rx.text(s.get("observaciones", ""), size="2", color="gray")),
-        rx.table.cell(rx.text(s.get("total_detalles", "0"), size="2")),
+        rx.table.cell(rx.text(s.get("total_cantidad", "0"), size="2")),
         rx.table.cell(
             rx.button(
                 rx.icon("eye", size=14),
