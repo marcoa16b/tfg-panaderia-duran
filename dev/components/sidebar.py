@@ -70,7 +70,7 @@ def sidebar() -> rx.Component:
         rx.vstack(
             rx.hstack(
                 rx.image(
-                    src="/logo.png",
+                    src="/Duran-logo.png", 
                     width="2em",
                     height="auto",
                     border_radius="50%",
