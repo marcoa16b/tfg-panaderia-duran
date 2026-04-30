@@ -28,6 +28,7 @@ from dev.states.entrada_salida_state import EntradaSalidaState
 from dev.states.receta_state import RecetaState
 from dev.states.produccion_state import ProduccionState
 from dev.states.reporte_state import ReporteState
+from dev.states.auth_state import AuthState
 
 setup_logging()
 logger = logging.getLogger("dev")
@@ -40,15 +41,15 @@ class State(rx.State):
 bootstrap_app()
 
 app = rx.App()
-app.add_page(index, on_load=DashboardState.load_dashboard)
+app.add_page(index, on_load=[AuthState.check_auth, DashboardState.load_dashboard])
 app.add_page(login)
 app.add_page(recovery_password, "/recovery-password")
-app.add_page(productos, "/productos", on_load=ProductoState.load_productos)
-app.add_page(entradas, "/entradas", on_load=EntradaSalidaState.on_load)
-app.add_page(salidas, "/salidas", on_load=EntradaSalidaState.on_load)
-app.add_page(recetas, "/recetas", on_load=RecetaState.on_load)
-app.add_page(produccion_diaria, "/produccion-diaria", on_load=ProduccionState.on_load)
-app.add_page(alertas, "/alertas", on_load=DashboardState.load_dashboard)
-app.add_page(estadisticas, "/estadisticas", on_load=ReporteState.on_load)
-app.add_page(reportes, "/reportes", on_load=ReporteState.on_load)
+app.add_page(productos, "/productos", on_load=[AuthState.check_auth, ProductoState.load_productos])
+app.add_page(entradas, "/entradas", on_load=[AuthState.check_auth, EntradaSalidaState.on_load])
+app.add_page(salidas, "/salidas", on_load=[AuthState.check_auth, EntradaSalidaState.on_load])
+app.add_page(recetas, "/recetas", on_load=[AuthState.check_auth, RecetaState.on_load])
+app.add_page(produccion_diaria, "/produccion-diaria", on_load=[AuthState.check_auth, ProduccionState.on_load])
+app.add_page(alertas, "/alertas", on_load=[AuthState.check_auth, DashboardState.load_dashboard])
+app.add_page(estadisticas, "/estadisticas", on_load=[AuthState.check_auth, ReporteState.on_load])
+app.add_page(reportes, "/reportes", on_load=[AuthState.check_auth, ReporteState.on_load])
 app.add_page(demo_components, "/demo-components")

@@ -87,6 +87,7 @@ class DashboardState(rx.State):
     lotes_por_vencer: int = 0
 
     alertas_recientes: list[dict] = []
+    alertas_todas: list[dict] = []
     total_alertas_no_leidas: int = 0
 
     is_loading: bool = False
@@ -128,6 +129,19 @@ class DashboardState(rx.State):
                 }
                 for a in alertas[:10]
             ]
+
+            todas = AlertaService.get_alertas_activas(only_unread=False)
+            self.alertas_todas = [
+                {
+                    "id": a.id,
+                    "mensaje": a.mensaje,
+                    "producto_id": a.producto_id,
+                    "leida": a.leida,
+                    "creado_en": str(a.creado_en) if a.creado_en else "",
+                }
+                for a in todas
+            ]
+
             logger.info(
                 "Dashboard cargado — %s alertas no leídas", self.total_alertas_no_leidas
             )
