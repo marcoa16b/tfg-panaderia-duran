@@ -149,6 +149,12 @@ class EntradaSalidaState(rx.State):
     detalle_salida: dict = {}
     detalle_salida_detalles: list[dict] = []
 
+    dialog_rapido_proveedor_open: bool = False
+    rapido_nombre: str = ""
+    rapido_telefono: str = ""
+    rapido_correo: str = ""
+    rapido_error: str = ""
+
     def set_tab(self, tab: str):
         """
         Cambia la tab activa y recarga la lista correspondiente.
@@ -250,6 +256,7 @@ class EntradaSalidaState(rx.State):
             {
                 "producto_id": None,
                 "cantidad": "",
+                "precio_unitario": "",
                 "fecha_vencimiento": "",
                 "codigo_lote": "",
             }
@@ -268,6 +275,7 @@ class EntradaSalidaState(rx.State):
             {
                 "producto_id": None,
                 "cantidad": "",
+                "precio_unitario": "",
                 "fecha_vencimiento": "",
                 "codigo_lote": "",
             }
@@ -321,15 +329,12 @@ class EntradaSalidaState(rx.State):
             self.form_entrada_lotes[index]["fecha_vencimiento"] = fecha
 
     def set_lote_codigo(self, index: int, codigo: str):
-        """
-        Establece el código de lote.
-
-        Args:
-            index: Índice del lote.
-            codigo: Código identificatorio del lote.
-        """
         if index < len(self.form_entrada_lotes):
             self.form_entrada_lotes[index]["codigo_lote"] = codigo
+
+    def set_lote_precio(self, index: int, precio: str):
+        if index < len(self.form_entrada_lotes):
+            self.form_entrada_lotes[index]["precio_unitario"] = precio
 
     def guardar_entrada(self):
         """
@@ -379,6 +384,8 @@ class EntradaSalidaState(rx.State):
                 )
             if lote.get("codigo_lote"):
                 lote_dict["codigo_lote"] = lote["codigo_lote"].strip()
+            if lote.get("precio_unitario") and Decimal(str(lote["precio_unitario"])) > 0:
+                lote_dict["precio_unitario"] = Decimal(str(lote["precio_unitario"]))
             lotes_data.append(lote_dict)
 
         try:
@@ -555,18 +562,23 @@ class EntradaSalidaState(rx.State):
             result = InventarioService.get_entrada_with_lotes(entrada_id)
             entrada = result["entrada"]
             lotes = result["lotes"]
-            self.detalle_entrada_lotes = [
-                {
-                    "id": l.id,
-                    "producto_id": l.producto_id,
-                    "cantidad": str(l.cantidad),
-                    "codigo_lote": l.codigo_lote or "",
-                    "fecha_vencimiento": str(l.fecha_vencimiento)
-                    if l.fecha_vencimiento
-                    else "N/A",
-                }
-                for l in lotes
-            ]
+            self.detalle_entrada_lotes = []
+            for l in lotes:
+                from dev.repositories.producto_repo import ProductoRepository
+
+                prod = ProductoRepository.get_by_id(l.producto_id)
+                self.detalle_entrada_lotes.append(
+                    {
+                        "id": l.id,
+                        "producto_id": l.producto_id,
+                        "producto_nombre": prod.nombre if prod else "Desconocido",
+                        "cantidad": str(l.cantidad),
+                        "codigo_lote": l.codigo_lote or "",
+                        "fecha_vencimiento": str(l.fecha_vencimiento)
+                        if l.fecha_vencimiento
+                        else "N/A",
+                    }
+                )
             self.detalle_entrada = {
                 "id": entrada.id,
                 "fecha": str(entrada.fecha),
@@ -618,6 +630,38 @@ class EntradaSalidaState(rx.State):
     def cerrar_detalle_salida(self):
         """Cierra el diálogo de detalle de salida."""
         self.detalle_salida_open = False
+
+    def abrir_crear_proveedor_rapido(self):
+        self.rapido_nombre = ""
+        self.rapido_telefono = ""
+        self.rapido_correo = ""
+        self.rapido_error = ""
+        self.dialog_rapido_proveedor_open = True
+
+    def cerrar_dialog_rapido_proveedor(self):
+        self.dialog_rapido_proveedor_open = False
+        self.rapido_error = ""
+
+    def guardar_proveedor_rapido(self):
+        self.rapido_error = ""
+        if not self.rapido_nombre.strip():
+            self.rapido_error = "El nombre es obligatorio."
+            return
+        try:
+            from dev.repositories.proveedor_repo import ProveedorRepository
+
+            nuevo = ProveedorRepository.create(
+                nombre=self.rapido_nombre.strip(),
+                telefono=self.rapido_telefono.strip() or None,
+                correo=self.rapido_correo.strip() or None,
+            )
+            self.dialog_rapido_proveedor_open = False
+            self._load_catalogos()
+            self.form_entrada_proveedor_id = str(nuevo.id)
+            return rx.toast.success("Proveedor creado correctamente.")
+        except Exception as e:
+            logger.error("Error creando proveedor rápido: %s", str(e))
+            self.rapido_error = "Error al crear proveedor."
 
     def _load_catalogos(self):
         """

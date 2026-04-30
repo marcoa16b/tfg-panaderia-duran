@@ -31,6 +31,7 @@ from dev.states.auth_state import AuthState
 NAV_ITEMS = [
     {"label": "Dashboard", "href": "/", "icon": "layout-dashboard"},
     {"label": "Productos", "href": "/productos", "icon": "package"},
+    {"label": "Proveedores", "href": "/proveedores", "icon": "truck"},
     {"label": "Entradas", "href": "/entradas", "icon": "log-in"},
     {"label": "Salidas", "href": "/salidas", "icon": "log-out"},
     {"label": "Recetas", "href": "/recetas", "icon": "chef-hat"},
@@ -38,6 +39,10 @@ NAV_ITEMS = [
     {"label": "Alertas", "href": "/alertas", "icon": "bell"},
     {"label": "Estadísticas", "href": "/estadisticas", "icon": "bar-chart-3"},
     {"label": "Reportes", "href": "/reportes", "icon": "file-text"},
+]
+
+NAV_ITEMS_FOOTER = [
+    {"label": "Configuración", "href": "/configuracion", "icon": "settings"},
 ]
 
 
@@ -105,24 +110,11 @@ def sidebar() -> rx.Component:
             ),
             rx.spacer(),
             rx.divider(),
-            rx.hstack(
-                rx.icon("user", size=16),
-                rx.text(
-                    AuthState.user_email,
-                    size="2",
-                    truncate=True,
-                ),
-                rx.button(
-                    rx.icon("log-out", size=16),
-                    variant="ghost",
-                    size="1",
-                    on_click=AuthState.logout,
-                    color_scheme="red",
-                ),
-                spacing="2",
-                align="center",
+            rx.vstack(
+                rx.foreach(NAV_ITEMS_FOOTER, nav_item),
+                spacing="1",
                 width="100%",
-                padding_x="0.5em",
+                align="start",
             ),
             width="100%",
             height="100%",

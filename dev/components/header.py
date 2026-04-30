@@ -18,6 +18,7 @@ Uso:
 
 import reflex as rx
 
+from dev.components.modal_confirmacion import modal_confirmacion
 from dev.states.auth_state import AuthState
 
 
@@ -36,12 +37,18 @@ def header() -> rx.Component:
                 weight="medium",
                 color="gray",
             ),
-            rx.button(
-                rx.icon("log-out", size=16),
-                "Cerrar sesión",
-                variant="ghost",
-                size="2",
-                on_click=AuthState.logout,
+            modal_confirmacion(
+                trigger=rx.button(
+                    rx.icon("log-out", size=16),
+                    "Cerrar sesión",
+                    variant="ghost",
+                    size="2",
+                    color_scheme="red",
+                ),
+                titulo="Cerrar sesión",
+                descripcion="¿Estás seguro de que deseas cerrar tu sesión?",
+                texto_confirmar="Cerrar sesión",
+                on_confirm=AuthState.logout,
                 color_scheme="red",
             ),
             spacing="3",

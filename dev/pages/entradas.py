@@ -51,6 +51,18 @@ def _lote_row(lote: dict, index: int) -> rx.Component:
             spacing="1",
         ),
         rx.vstack(
+            rx.text("Precio unit.", size="1", weight="medium"),
+            rx.input(
+                type="number",
+                placeholder="0.00",
+                value=lote["precio_unitario"],
+                on_change=lambda v: EntradaSalidaState.set_lote_precio(index, v),
+                size="2",
+                width="100px",
+            ),
+            spacing="1",
+        ),
+        rx.vstack(
             rx.text("Código lote", size="1", weight="medium"),
             rx.input(
                 placeholder="Lote-001",
@@ -200,22 +212,36 @@ def entradas() -> rx.Component:
                             ),
                             rx.vstack(
                                 rx.text("Proveedor", size="2", weight="medium"),
-                                rx.select.root(
-                                    rx.select.trigger(
-                                        placeholder="Proveedor (opcional)",
-                                        size="2",
-                                    ),
-                                    rx.select.content(
-                                        rx.foreach(
-                                            EntradaSalidaState.proveedores,
-                                            lambda p: rx.select.item(
-                                                p["nombre"],
-                                                value=p["id"].to_string(),
+                                rx.hstack(
+                                    rx.select.root(
+                                        rx.select.trigger(
+                                            placeholder="Proveedor (opcional)",
+                                            size="2",
+                                        ),
+                                        rx.select.content(
+                                            rx.foreach(
+                                                EntradaSalidaState.proveedores,
+                                                lambda p: rx.select.item(
+                                                    p["nombre"],
+                                                    value=p["id"].to_string(),
+                                                ),
                                             ),
                                         ),
+                                        value=EntradaSalidaState.form_entrada_proveedor_id,
+                                        on_change=EntradaSalidaState.set_form_entrada_proveedor_id,
                                     ),
-                                    value=EntradaSalidaState.form_entrada_proveedor_id,
-                                    on_change=EntradaSalidaState.set_form_entrada_proveedor_id,
+                                    rx.tooltip(
+                                        rx.button(
+                                            rx.icon("plus", size=14),
+                                            variant="soft",
+                                            size="2",
+                                            on_click=EntradaSalidaState.abrir_crear_proveedor_rapido,
+                                        ),
+                                        content="Agregar proveedor",
+                                    ),
+                                    spacing="1",
+                                    align="end",
+                                    width="100%",
                                 ),
                                 spacing="1",
                                 width="100%",
@@ -304,7 +330,7 @@ def entradas() -> rx.Component:
                         padding_top="1em",
                         width="100%",
                     ),
-                    max_width="700px",
+                    max_width="900px",
                     max_height="85vh",
                     overflow_y="auto",
                 ),
@@ -343,9 +369,9 @@ def entradas() -> rx.Component:
                                 EntradaSalidaState.detalle_entrada_lotes,
                                 lambda l: rx.hstack(
                                     rx.text(
-                                        "Producto #",
-                                        l["producto_id"].to_string(),
+                                        l["producto_nombre"],
                                         size="2",
+                                        weight="medium",
                                     ),
                                     rx.badge(l["cantidad"], color_scheme="blue"),
                                     rx.text(
@@ -382,6 +408,84 @@ def entradas() -> rx.Component:
                 ),
                 open=EntradaSalidaState.detalle_entrada_open,
                 on_open_change=EntradaSalidaState.cerrar_detalle_entrada,
+            ),
+            rx.dialog.root(
+                rx.dialog.content(
+                    rx.dialog.title("Nuevo proveedor"),
+                    rx.dialog.description("Crea un proveedor rápidamente sin salir de esta página."),
+                    rx.vstack(
+                        rx.vstack(
+                            rx.text("Nombre *", size="2", weight="medium"),
+                            rx.input(
+                                placeholder="Nombre del proveedor",
+                                value=EntradaSalidaState.rapido_nombre,
+                                on_change=EntradaSalidaState.set_rapido_nombre,
+                                size="2",
+                                width="100%",
+                            ),
+                            spacing="2",
+                            width="100%",
+                        ),
+                        rx.hstack(
+                            rx.vstack(
+                                rx.text("Teléfono", size="2", weight="medium"),
+                                rx.input(
+                                    placeholder="8888-8888",
+                                    value=EntradaSalidaState.rapido_telefono,
+                                    on_change=EntradaSalidaState.set_rapido_telefono,
+                                    size="2",
+                                    width="100%",
+                                ),
+                                spacing="2",
+                                width="100%",
+                            ),
+                            rx.vstack(
+                                rx.text("Correo", size="2", weight="medium"),
+                                rx.input(
+                                    placeholder="correo@ejemplo.com",
+                                    value=EntradaSalidaState.rapido_correo,
+                                    on_change=EntradaSalidaState.set_rapido_correo,
+                                    size="2",
+                                    width="100%",
+                                ),
+                                spacing="2",
+                                width="100%",
+                            ),
+                            spacing="4",
+                            width="100%",
+                        ),
+                        rx.cond(
+                            EntradaSalidaState.rapido_error != "",
+                            rx.callout(
+                                EntradaSalidaState.rapido_error,
+                                icon="circle-alert",
+                                color_scheme="red",
+                                size="1",
+                            ),
+                        ),
+                        spacing="4",
+                        width="100%",
+                    ),
+                    rx.hstack(
+                        rx.button(
+                            "Cancelar",
+                            variant="soft",
+                            color_scheme="gray",
+                            on_click=EntradaSalidaState.cerrar_dialog_rapido_proveedor,
+                        ),
+                        rx.button(
+                            "Crear proveedor",
+                            on_click=EntradaSalidaState.guardar_proveedor_rapido,
+                        ),
+                        spacing="3",
+                        justify="end",
+                        padding_top="1em",
+                        width="100%",
+                    ),
+                    max_width="420px",
+                ),
+                open=EntradaSalidaState.dialog_rapido_proveedor_open,
+                on_open_change=EntradaSalidaState.cerrar_dialog_rapido_proveedor,
             ),
             spacing="5",
             width="100%",

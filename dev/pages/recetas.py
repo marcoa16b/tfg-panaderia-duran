@@ -207,7 +207,7 @@ def recetas() -> rx.Component:
                                 ),
                                 rx.select.content(
                                     rx.foreach(
-                                        RecetaState.productos,
+                                        RecetaState.productos_produccion,
                                         lambda p: rx.select.item(
                                             p["nombre"],
                                             value=p["id"].to_string(),
@@ -216,6 +216,11 @@ def recetas() -> rx.Component:
                                 ),
                                 value=RecetaState.form_producto_id,
                                 on_change=RecetaState.set_form_producto_id,
+                            ),
+                            rx.text(
+                                "Solo productos de categoría Producción",
+                                size="1",
+                                color="gray",
                             ),
                             spacing="1",
                             width="100%",
@@ -298,9 +303,9 @@ def recetas() -> rx.Component:
                                 RecetaState.detalle_ingredientes,
                                 lambda d: rx.hstack(
                                     rx.text(
-                                        "Producto #",
-                                        d["producto_id"].to_string(),
+                                        d["producto_nombre"],
                                         size="2",
+                                        weight="medium",
                                     ),
                                     rx.badge(d["cantidad"], color_scheme="blue"),
                                     spacing="3",

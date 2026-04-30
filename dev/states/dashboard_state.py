@@ -110,6 +110,11 @@ class DashboardState(rx.State):
         self.is_loading = True
         self.error_message = ""
         try:
+            try:
+                AlertaService.ejecutar_deteccion_completa()
+            except Exception as alert_err:
+                logger.warning("Error en detección automática: %s", str(alert_err))
+
             resumen = ReporteService.get_resumen_dashboard()
             self.total_productos = resumen.get("total_productos", 0)
             self.productos_bajo_stock = resumen.get("productos_bajo_stock", 0)
