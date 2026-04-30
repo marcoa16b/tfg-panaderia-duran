@@ -100,9 +100,9 @@ def alertas() -> rx.Component:
                 ),
             ),
             rx.cond(
-                DashboardState.alertas_recientes.length() > 0,
+                DashboardState.alertas_todas.length() > 0,
                 rx.box(
-                    rx.foreach(DashboardState.alertas_recientes, _alerta_row),
+                    rx.foreach(DashboardState.alertas_todas, _alerta_row),
                     width="100%",
                     border="1px solid var(--gray-4)",
                     border_radius="8px",

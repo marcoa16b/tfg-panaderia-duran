@@ -171,6 +171,15 @@ class InventarioService:
             result["entrada"].id,
             len(result["lotes"]),
         )
+
+        try:
+            from dev.services.alerta_service import AlertaService
+
+            AlertaService.detectar_proximos_a_vencer()
+            logger.info("Detección de vencimiento ejecutada tras entrada")
+        except Exception as alert_err:
+            logger.warning("Error en detección de vencimiento: %s", str(alert_err))
+
         return result
 
     @classmethod
@@ -287,6 +296,16 @@ class InventarioService:
             result["salida"].id,
             len(result["detalles"]),
         )
+
+        try:
+            from dev.services.alerta_service import AlertaService
+
+            AlertaService.detectar_bajo_stock()
+            AlertaService.detectar_proximos_a_vencer()
+            logger.info("Detección automática de alertas ejecutada tras salida")
+        except Exception as alert_err:
+            logger.warning("Error en detección automática de alertas: %s", str(alert_err))
+
         return result
 
     @classmethod

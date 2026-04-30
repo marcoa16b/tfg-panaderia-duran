@@ -44,11 +44,26 @@ def reportes() -> rx.Component:
             rx.hstack(
                 rx.heading("Reportes", size="7", weight="bold"),
                 rx.spacer(),
-                rx.button(
-                    rx.icon("download", size=16),
-                    "Exportar CSV",
-                    variant="outline",
-                    on_click=ReporteState.exportar_csv,
+                rx.hstack(
+                    rx.button(
+                        rx.icon("file-text", size=16),
+                        "PDF",
+                        variant="outline",
+                        on_click=ReporteState.exportar_pdf,
+                    ),
+                    rx.button(
+                        rx.icon("table", size=16),
+                        "Excel",
+                        variant="outline",
+                        on_click=ReporteState.exportar_excel,
+                    ),
+                    rx.button(
+                        rx.icon("download", size=16),
+                        "CSV",
+                        variant="soft",
+                        on_click=ReporteState.exportar_csv,
+                    ),
+                    spacing="2",
                 ),
                 width="100%",
                 align="center",

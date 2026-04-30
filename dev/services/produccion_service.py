@@ -232,6 +232,16 @@ class ProduccionService:
             cantidad_producida,
             len(consumo_por_lote),
         )
+
+        try:
+            from dev.services.alerta_service import AlertaService
+
+            AlertaService.detectar_bajo_stock()
+            AlertaService.detectar_proximos_a_vencer()
+            logger.info("Detección automática de alertas ejecutada tras producción")
+        except Exception as alert_err:
+            logger.warning("Error en detección automática de alertas: %s", str(alert_err))
+
         return result
 
     @classmethod

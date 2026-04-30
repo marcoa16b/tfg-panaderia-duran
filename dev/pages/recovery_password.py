@@ -9,7 +9,7 @@ def recovery_password() -> rx.Component:
             rx.vstack(
                 rx.center(
                     rx.image(
-                        src="/logo.png",
+                        src="/Duran-logo.png",
                         width="3em",
                         height="auto",
                         border_radius="25%",

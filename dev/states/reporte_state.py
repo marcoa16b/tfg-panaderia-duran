@@ -274,22 +274,12 @@ class ReporteState(rx.State):
 
     def exportar_csv(self):
         """
-        Exporta el reporte activo a un archivo CSV.
-
-        Genera un archivo CSV en el directorio temporal del sistema
-        con los datos del reporte de la tab activa.
-
-        Flujo:
-            1. Determina qué datos exportar según tab_activa.
-            2. Genera el nombre de archivo con fecha actual.
-            3. Si no hay datos, muestra toast informativo.
-            4. Crea el CSV con csv.DictWriter.
-            5. Guarda en tempfile y muestra toast de éxito.
+        Exporta el reporte activo a CSV y lo descarga al navegador.
 
         Returns:
-            rx.toast.success con nombre del archivo exportado.
+            rx.download con el archivo CSV.
             rx.toast.info si no hay datos.
-            rx.toast.error si falla la exportación.
+            rx.toast.error si falla.
         """
         self.is_loading = True
         try:
@@ -311,22 +301,121 @@ class ReporteState(rx.State):
 
             import csv
             import io
-            import os
-            import tempfile
 
             output = io.StringIO()
             writer = csv.DictWriter(output, fieldnames=data[0].keys())
             writer.writeheader()
             writer.writerows(data)
 
-            tmp_path = os.path.join(tempfile.gettempdir(), filename)
-            with open(tmp_path, "w", newline="", encoding="utf-8") as f:
-                f.write(output.getvalue())
-
-            logger.info("CSV exportado: %s", tmp_path)
-            return rx.toast.success(f"Reporte exportado: {filename}")
+            logger.info("CSV generado para descarga: %s", filename)
+            return rx.download(data=output.getvalue(), filename=filename)
         except Exception as e:
-            logger.error("Error exportando: %s", str(e))
+            logger.error("Error exportando CSV: %s", str(e))
             return rx.toast.error("Error al exportar reporte.")
+        finally:
+            self.is_loading = False
+
+    def _get_reporte_config(self) -> Optional[dict]:
+        """Retorna la configuración de headers y rows según la tab activa."""
+        if self.tab_activa == "existencias":
+            return {
+                "titulo": "Reporte de Existencias",
+                "subtitulo": "Stock actual de todos los productos",
+                "hoja": "Existencias",
+                "headers": ["Producto", "Stock Actual", "Stock Mínimo", "Bajo Stock", "Ubicación"],
+                "rows": [
+                    [e.get("nombre", ""), e.get("stock_actual", ""), e.get("stock_minimo", ""),
+                     "Sí" if e.get("bajo_stock") else "No", e.get("ubicacion", "")]
+                    for e in self.existencias
+                ],
+                "filename_base": "existencias",
+            }
+        elif self.tab_activa == "perdidas":
+            return {
+                "titulo": "Reporte de Pérdidas",
+                "subtitulo": "Productos dañados y vencidos",
+                "hoja": "Pérdidas",
+                "headers": ["Fecha", "Producto", "Cantidad", "Motivo", "Tipo", "Valor Pérdida"],
+                "rows": [
+                    [p.get("fecha", ""), p.get("producto", ""), p.get("cantidad", ""),
+                     p.get("motivo", ""), p.get("tipo", ""), p.get("valor_perdida", "")]
+                    for p in self.perdidas
+                ],
+                "filename_base": "perdidas",
+            }
+        elif self.tab_activa == "consumo":
+            return {
+                "titulo": "Reporte de Consumo Anual",
+                "subtitulo": f"Año {self.filtro_anio}",
+                "hoja": "Consumo Anual",
+                "headers": ["Producto", "Total Consumido", "Año"],
+                "rows": [
+                    [c.get("nombre", ""), c.get("total_consumido", ""), str(c.get("anio", ""))]
+                    for c in self.consumo_anual
+                ],
+                "filename_base": "consumo_anual",
+            }
+        return None
+
+    def exportar_pdf(self):
+        """
+        Genera PDF en memoria y lo descarga al navegador del usuario.
+
+        Returns:
+            rx.download con los bytes del PDF.
+            rx.toast.info si no hay datos.
+            rx.toast.error si falla.
+        """
+        self.is_loading = True
+        try:
+            config = self._get_reporte_config()
+            if not config or not config["rows"]:
+                return rx.toast.info("No hay datos para exportar.")
+
+            from dev.services.export_service import ExportService
+
+            filename = f"{config['filename_base']}_{date.today().isoformat()}.pdf"
+            pdf_bytes = ExportService.generate_pdf(
+                titulo=config["titulo"],
+                subtitulo=config["subtitulo"],
+                headers=config["headers"],
+                rows=config["rows"],
+            )
+            logger.info("PDF generado para descarga: %s (%s bytes)", filename, len(pdf_bytes))
+            return rx.download(data=pdf_bytes, filename=filename)
+        except Exception as e:
+            logger.error("Error exportando PDF: %s", str(e))
+            return rx.toast.error("Error al exportar PDF.")
+        finally:
+            self.is_loading = False
+
+    def exportar_excel(self):
+        """
+        Genera Excel en memoria y lo descarga al navegador del usuario.
+
+        Returns:
+            rx.download con los bytes del Excel.
+            rx.toast.info si no hay datos.
+            rx.toast.error si falla.
+        """
+        self.is_loading = True
+        try:
+            config = self._get_reporte_config()
+            if not config or not config["rows"]:
+                return rx.toast.info("No hay datos para exportar.")
+
+            from dev.services.export_service import ExportService
+
+            filename = f"{config['filename_base']}_{date.today().isoformat()}.xlsx"
+            xlsx_bytes = ExportService.generate_excel(
+                titulo=config["hoja"],
+                headers=config["headers"],
+                rows=config["rows"],
+            )
+            logger.info("Excel generado para descarga: %s (%s bytes)", filename, len(xlsx_bytes))
+            return rx.download(data=xlsx_bytes, filename=filename)
+        except Exception as e:
+            logger.error("Error exportando Excel: %s", str(e))
+            return rx.toast.error("Error al exportar Excel.")
         finally:
             self.is_loading = False
