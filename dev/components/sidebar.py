@@ -41,6 +41,10 @@ NAV_ITEMS = [
     {"label": "Reportes", "href": "/reportes", "icon": "file-text"},
 ]
 
+NAV_ITEMS_FOOTER = [
+    {"label": "Configuración", "href": "/configuracion", "icon": "settings"},
+]
+
 
 def nav_item(item: dict) -> rx.Component:
     return rx.link(
@@ -106,17 +110,11 @@ def sidebar() -> rx.Component:
             ),
             rx.spacer(),
             rx.divider(),
-            rx.hstack(
-                rx.icon("user", size=16),
-                rx.text(
-                    AuthState.user_email,
-                    size="2",
-                    truncate=True,
-                ),
-                spacing="2",
-                align="center",
+            rx.vstack(
+                rx.foreach(NAV_ITEMS_FOOTER, nav_item),
+                spacing="1",
                 width="100%",
-                padding_x="0.5em",
+                align="start",
             ),
             width="100%",
             height="100%",

@@ -19,6 +19,7 @@ from dev.pages.alertas import alertas
 from dev.pages.estadisticas import estadisticas
 from dev.pages.reportes import reportes
 from dev.pages.proveedores import proveedores
+from dev.pages.configuracion import configuracion
 from dev.pages.demo_components import demo_components
 
 from dev.core.bootstrap import bootstrap_app
@@ -30,6 +31,7 @@ from dev.states.receta_state import RecetaState
 from dev.states.produccion_state import ProduccionState
 from dev.states.reporte_state import ReporteState
 from dev.states.proveedor_state import ProveedorState
+from dev.states.config_state import ConfigState
 from dev.states.auth_state import AuthState
 
 setup_logging()
@@ -55,4 +57,5 @@ app.add_page(alertas, "/alertas", on_load=[AuthState.check_auth, DashboardState.
 app.add_page(estadisticas, "/estadisticas", on_load=[AuthState.check_auth, ReporteState.on_load])
 app.add_page(reportes, "/reportes", on_load=[AuthState.check_auth, ReporteState.on_load])
 app.add_page(proveedores, "/proveedores", on_load=[AuthState.check_auth, ProveedorState.load_proveedores])
+app.add_page(configuracion, "/configuracion", on_load=[AuthState.check_auth, ConfigState.on_load])
 app.add_page(demo_components, "/demo-components")

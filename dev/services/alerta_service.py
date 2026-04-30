@@ -58,7 +58,7 @@ Uso desde la capa State:
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from typing import Optional
 
@@ -132,6 +132,32 @@ class AlertaRepository(BaseRepository[AlertaInventario]):
                 AlertaInventario.leida == False,  # noqa: E712
             )
             return session.exec(stmt).first() is not None
+
+    @classmethod
+    def get_activa_by_producto_tipo(
+        cls, producto_id: int, tipo_id: int
+    ) -> Optional[AlertaInventario]:
+        """Retorna la alerta activa y no leída para el producto y tipo dados."""
+        with rx.session() as session:
+            stmt = select(AlertaInventario).where(
+                AlertaInventario.producto_id == producto_id,
+                AlertaInventario.tipo_id == tipo_id,
+                AlertaInventario.activo == True,  # noqa: E712
+                AlertaInventario.leida == False,  # noqa: E712
+            )
+            return session.exec(stmt).first()
+
+    @classmethod
+    def update_mensaje(cls, alerta_id: int, nuevo_mensaje: str) -> bool:
+        """Actualiza el mensaje de una alerta existente."""
+        with rx.session() as session:
+            alerta = session.get(AlertaInventario, alerta_id)
+            if not alerta:
+                return False
+            alerta.mensaje = nuevo_mensaje
+            session.add(alerta)
+            session.commit()
+            return True
 
     @classmethod
     def marcar_leida(cls, alerta_id: int) -> bool:
@@ -250,17 +276,25 @@ class AlertaService:
             return []
 
         alertas_creadas = []
+        hoy = date.today()
         for lote in lotes:
             producto_id: int = lote.producto_id  # type: ignore[assignment]
-            if not AlertaRepository.exists_alerta_activa(producto_id, tipo_id):
-                producto = ProductoRepository.get_by_id(producto_id)
-                nombre = producto.nombre if producto else "Desconocido"
-                vencimiento = lote.fecha_vencimiento or "N/A"
+            producto = ProductoRepository.get_by_id(producto_id)
+            nombre = producto.nombre if producto else "Desconocido"
+            vencimiento = lote.fecha_vencimiento or "N/A"
 
+            vencida = (
+                isinstance(lote.fecha_vencimiento, date)
+                and lote.fecha_vencimiento < hoy
+            )
+            prefijo = "Vencido" if vencida else "Próximo a vencer"
+            mensaje = f"{prefijo}: {nombre} — lote {lote.codigo_lote or lote.id}, vence: {vencimiento}"
+
+            if not AlertaRepository.exists_alerta_activa(producto_id, tipo_id):
                 alerta = AlertaRepository.create(
                     tipo_id=tipo_id,
                     producto_id=producto_id,
-                    mensaje=f"Próximo a vencer: {nombre} — lote {lote.codigo_lote or lote.id}, vence: {vencimiento}",
+                    mensaje=mensaje,
                 )
                 alertas_creadas.append(alerta)
                 logger.info(
@@ -269,6 +303,18 @@ class AlertaService:
                     lote.id,
                     alerta.id,
                 )
+            elif vencida:
+                existente = AlertaRepository.get_activa_by_producto_tipo(
+                    producto_id, tipo_id
+                )
+                if existente and existente.mensaje and existente.mensaje.startswith("Próximo a vencer"):
+                    AlertaRepository.update_mensaje(existente.id, mensaje)
+                    logger.info(
+                        "Alerta actualizada a 'Vencido': %s lote %s (id=%s)",
+                        nombre,
+                        lote.id,
+                        existente.id,
+                    )
 
         return alertas_creadas
 
