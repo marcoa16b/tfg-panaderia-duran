@@ -5,6 +5,7 @@ __pycache__/
 assets/external/
 .states
 .venv
+.pytest_cache/
 
 # Alembic
 alembic/
@@ -19,3 +20,6 @@ skills-lock.json
 PROJECT.md
 ANALISIS.md
 PLAN.md
+
+# Environment
+.env

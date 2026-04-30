@@ -1,5 +1,6 @@
 import logging
 
+from dev.core.config import SEED_DEMO
 from dev.core.database import create_db_and_tables
 from dev.core.seed_data import run_all_seeds
 
@@ -12,6 +13,11 @@ def bootstrap_app() -> None:
     logger.info("Tablas de BD verificadas/creadas")
     run_all_seeds()
     logger.info("Seed de datos iniciales completado")
+    if SEED_DEMO:
+        logger.info("SEED_DEMO=true — ejecutando seed de demostración")
+        from dev.core.seed_demo import run_demo_seed
+        result = run_demo_seed()
+        logger.info("Demo seed completado — %s", result)
     _run_initial_alert_detection()
     logger.info("Bootstrap completado")
 

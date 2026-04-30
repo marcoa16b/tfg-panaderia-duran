@@ -44,7 +44,12 @@ class State(rx.State):
 
 bootstrap_app()
 
-app = rx.App()
+app = rx.App(
+    stylesheets=[
+        "/styles.css",  # This path is relative to assets/
+    ],
+)
+
 app.add_page(index, on_load=[AuthState.check_auth, DashboardState.load_dashboard])
 app.add_page(login)
 app.add_page(recovery_password, "/recovery-password")

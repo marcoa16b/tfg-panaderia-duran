@@ -61,7 +61,8 @@ def tabla_generica(
     empty_message: str = "No hay datos disponibles",
 ) -> rx.Component:
     return rx.box(
-        rx.table.root(
+        rx.box(
+            rx.table.root(
             rx.table.header(
                 rx.table.row(
                     *[
@@ -112,6 +113,9 @@ def tabla_generica(
                 ),
             ),
             width="100%",
+            ),
+            overflow_x="auto",
+            class_name="max-md:-mx-4",
         ),
         rx.hstack(
             rx.text(
