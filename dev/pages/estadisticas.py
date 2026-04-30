@@ -10,11 +10,11 @@ def _existencia_row(e: dict) -> rx.Component:
         rx.table.cell(rx.text(e["nombre"], weight="medium", size="2")),
         rx.table.cell(
             rx.badge(
-                e["stock_actual"],
+                rx.text(e["stock_actual"], " ", e["unidad_abrev"]),
                 color_scheme=rx.cond(e["bajo_stock"] == True, "red", "green"),
             )
         ),
-        rx.table.cell(rx.text(e["stock_minimo"], size="2")),
+        rx.table.cell(rx.text(e["stock_minimo"], " ", e["unidad_abrev"], size="2")),
         rx.table.cell(rx.text(e.get("ubicacion", ""), size="2", color="gray")),
         rx.table.cell(
             rx.cond(

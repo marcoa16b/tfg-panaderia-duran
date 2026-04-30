@@ -31,6 +31,7 @@ from dev.states.auth_state import AuthState
 NAV_ITEMS = [
     {"label": "Dashboard", "href": "/", "icon": "layout-dashboard"},
     {"label": "Productos", "href": "/productos", "icon": "package"},
+    {"label": "Proveedores", "href": "/proveedores", "icon": "truck"},
     {"label": "Entradas", "href": "/entradas", "icon": "log-in"},
     {"label": "Salidas", "href": "/salidas", "icon": "log-out"},
     {"label": "Recetas", "href": "/recetas", "icon": "chef-hat"},
@@ -111,13 +112,6 @@ def sidebar() -> rx.Component:
                     AuthState.user_email,
                     size="2",
                     truncate=True,
-                ),
-                rx.button(
-                    rx.icon("log-out", size=16),
-                    variant="ghost",
-                    size="1",
-                    on_click=AuthState.logout,
-                    color_scheme="red",
                 ),
                 spacing="2",
                 align="center",

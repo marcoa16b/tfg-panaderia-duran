@@ -20,12 +20,15 @@ def _product_row(p: dict) -> rx.Component:
         rx.table.cell(rx.text(p["nombre"], weight="medium", size="2"), width="25%"),
         rx.table.cell(
             rx.badge(
-                p["stock_actual"],
+                rx.text(p["stock_actual"], " ", p["unidad_abrev"]),
                 color_scheme=rx.cond(p["bajo_stock"], "red", "green"),
             ),
             width="12%",
         ),
-        rx.table.cell(rx.text(p["stock_minimo"], size="2"), width="12%"),
+        rx.table.cell(
+            rx.text(p["stock_minimo"], " ", p["unidad_abrev"], size="2"),
+            width="12%",
+        ),
         rx.table.cell(rx.text(p["ubicacion"], size="2", color="gray"), width="18%"),
         rx.table.cell(
             rx.badge(

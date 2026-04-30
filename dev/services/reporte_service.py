@@ -424,7 +424,7 @@ class ReporteService:
                     EntradaInventario.fecha <= fecha_fin,
                     EntradaInventario.activo == True,  # noqa: E712
                 )
-                .order_by(EntradaInventario.fecha.desc())
+                .order_by(EntradaInventario.fecha.desc(), EntradaInventario.id.desc())
             )
 
             entradas = session.exec(stmt).all()
@@ -494,7 +494,7 @@ class ReporteService:
                     SalidaInventario.fecha <= fecha_fin,
                     SalidaInventario.activo == True,  # noqa: E712
                 )
-                .order_by(SalidaInventario.fecha.desc())
+                .order_by(SalidaInventario.fecha.desc(), SalidaInventario.id.desc())
             )
 
             salidas = session.exec(stmt).all()

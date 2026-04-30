@@ -162,17 +162,23 @@ class ReporteState(rx.State):
         self.error_message = ""
         try:
             data = ReporteService.get_existencias_actuales()
-            self.existencias = [
-                {
-                    "producto_id": r["producto_id"],
-                    "nombre": r["nombre"],
-                    "stock_actual": str(r["stock_actual"]),
-                    "stock_minimo": str(r["stock_minimo"]),
-                    "bajo_stock": r["bajo_stock"],
-                    "ubicacion": r.get("ubicacion", ""),
-                }
-                for r in data
-            ]
+            from dev.models.models import UnidadMedida
+
+            with rx.session() as session:
+                self.existencias = []
+                for r in data:
+                    um = session.get(UnidadMedida, r.get("unidad_medida_id"))
+                    self.existencias.append(
+                        {
+                            "producto_id": r["producto_id"],
+                            "nombre": r["nombre"],
+                            "stock_actual": str(r["stock_actual"]),
+                            "stock_minimo": str(r["stock_minimo"]),
+                            "unidad_abrev": um.abreviatura if um else "",
+                            "bajo_stock": r["bajo_stock"],
+                            "ubicacion": r.get("ubicacion", ""),
+                        }
+                    )
             logger.info("Existencias cargadas: %s productos", len(self.existencias))
         except Exception as e:
             logger.error("Error cargando existencias: %s", str(e))

@@ -137,6 +137,7 @@ class RecetaState(rx.State):
     disponibilidad_cantidad: str = "1"
 
     productos: list[dict] = []
+    productos_produccion: list[dict] = []
 
     def on_load(self):
         """Carga el catálogo de productos y la lista de recetas al montar la página."""
@@ -422,14 +423,19 @@ class RecetaState(rx.State):
             result = RecetaService.get_with_detalles(receta_id)
             receta = result["receta"]
             detalles = result["detalles"]
-            self.detalle_ingredientes = [
-                {
-                    "id": d.id,
-                    "producto_id": d.producto_id,
-                    "cantidad": str(d.cantidad),
-                }
-                for d in detalles
-            ]
+            from dev.repositories.producto_repo import ProductoRepository
+
+            self.detalle_ingredientes = []
+            for d in detalles:
+                prod = ProductoRepository.get_by_id(d.producto_id)
+                self.detalle_ingredientes.append(
+                    {
+                        "id": d.id,
+                        "producto_id": d.producto_id,
+                        "producto_nombre": prod.nombre if prod else "Desconocido",
+                        "cantidad": str(d.cantidad),
+                    }
+                )
             self.detalle_receta = {
                 "id": receta.id,
                 "nombre": receta.nombre,
@@ -511,8 +517,7 @@ class RecetaState(rx.State):
         self.editando_id = None
 
     def _load_productos(self):
-        """Carga los productos activos para los selectores de ingredientes."""
-        from dev.models.models import Producto
+        from dev.models.models import CategoriaProducto, Producto
         from sqlmodel import select
 
         with rx.session() as session:
@@ -520,3 +525,22 @@ class RecetaState(rx.State):
                 select(Producto).where(Producto.activo == True)  # noqa: E712
             ).all()
             self.productos = [{"id": p.id, "nombre": p.nombre} for p in prods]
+
+            cat_prod = session.exec(
+                select(CategoriaProducto.id).where(
+                    CategoriaProducto.nombre == "Producción",
+                    CategoriaProducto.activo == True,  # noqa: E712
+                )
+            ).first()
+            if cat_prod:
+                prods_prod = session.exec(
+                    select(Producto).where(
+                        Producto.activo == True,  # noqa: E712
+                        Producto.categoria_id == cat_prod,
+                    )
+                ).all()
+                self.productos_produccion = [
+                    {"id": p.id, "nombre": p.nombre} for p in prods_prod
+                ]
+            else:
+                self.productos_produccion = []

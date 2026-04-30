@@ -399,23 +399,19 @@ class ProductoState(rx.State):
 
     @staticmethod
     def _producto_to_dict(p) -> dict:
-        """
-        Serializa un modelo Producto a dict para el frontend.
+        from dev.models.models import UnidadMedida
 
-        Los campos Decimal se convierten a str para ser JSON-serializables.
+        with rx.session() as session:
+            um = session.get(UnidadMedida, p.unidad_medida_id)
+            abrev = um.abreviatura if um else ""
 
-        Args:
-            p: Instancia de Producto (modelo SQLModel).
-
-        Returns:
-            Dict con todos los campos necesarios para la tabla y formularios.
-        """
         return {
             "id": p.id,
             "nombre": p.nombre,
             "descripcion": p.descripcion or "",
             "categoria_id": p.categoria_id,
             "unidad_medida_id": p.unidad_medida_id,
+            "unidad_abrev": abrev,
             "stock_actual": str(p.stock_actual),
             "stock_minimo": str(p.stock_minimo),
             "bajo_stock": p.stock_actual <= p.stock_minimo,

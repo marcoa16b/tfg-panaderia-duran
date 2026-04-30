@@ -214,6 +214,7 @@ def seed_categorias_producto() -> int:
             {"nombre": "Frutas", "descripcion": "Frutas frescas y procesadas"},
             {"nombre": "Empaques", "descripcion": "Bolsas, cajas, etiquetas"},
             {"nombre": "Condimentos", "descripcion": "Especias, sal, vainilla, etc."},
+            {"nombre": "Producción", "descripcion": "Productos finales elaborados por la panadería"},
         ],
     )
 
