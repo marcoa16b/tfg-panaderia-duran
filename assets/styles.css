@@ -1,0 +1,9 @@
+/* Panadería Durán — Custom styles */
+
+body > div[class^="css-1qwptgo"] > a {
+    display: none !important;
+}
+
+.css-1qwptgo {
+    display: none !important;
+}

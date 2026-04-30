@@ -75,10 +75,11 @@ def sidebar() -> rx.Component:
         rx.vstack(
             rx.hstack(
                 rx.image(
-                    src="/Duran-logo.png", 
+                    src="/Duran-logo.png",
                     width="2em",
                     height="auto",
                     border_radius="50%",
+                    alt="Logo Panadería Durán",
                 ),
                 rx.vstack(
                     rx.heading(
@@ -130,4 +131,7 @@ def sidebar() -> rx.Component:
         border_right=f"1px solid {rx.color_mode_cond(light='var(--gray-4)', dark='var(--gray-6)')}",
         background=rx.color_mode_cond(light="var(--gray-1)", dark="var(--gray-2)"),
         overflow_y="auto",
+        role="navigation",
+        aria_label="Navegación principal",
+        class_name="max-lg:hidden",
     )

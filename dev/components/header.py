@@ -40,10 +40,11 @@ def header() -> rx.Component:
             modal_confirmacion(
                 trigger=rx.button(
                     rx.icon("log-out", size=16),
-                    "Cerrar sesión",
+                    rx.text("Cerrar sesión", class_name="max-sm:hidden"),
                     variant="ghost",
                     size="2",
                     color_scheme="red",
+                    aria_label="Cerrar sesión",
                 ),
                 titulo="Cerrar sesión",
                 descripcion="¿Estás seguro de que deseas cerrar tu sesión?",
@@ -60,4 +61,5 @@ def header() -> rx.Component:
         border_bottom=f"1px solid {rx.color_mode_cond(light='var(--gray-4)', dark='var(--gray-6)')}",
         background=rx.color_mode_cond(light="white", dark="var(--gray-1)"),
         align="center",
+        role="banner",
     )

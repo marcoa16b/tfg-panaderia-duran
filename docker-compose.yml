@@ -1,19 +1,29 @@
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: panaderia-duran-app
     restart: unless-stopped
     ports:
-      - "3000:3000"
-      - "8000:8000"
+      - "${APP_PORT:-3000}:3000"
+      - "${BACKEND_PORT:-8000}:8000"
     environment:
-      DATABASE_URL: postgresql://panaderia_user:${DB_PASSWORD}@db:5432/panaderia_duran
-      SECRET_KEY: ${SECRET_KEY}
+      DATABASE_URL: postgresql://${DB_USER:-panaderia_user}:${DB_PASSWORD}@db:${DB_PORT:-5432}/${DB_NAME:-panaderia_duran}
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY is required}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       DEBUG: ${DEBUG:-false}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      SEED_DEMO: ${SEED_DEMO:-false}
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     logging:
       driver: "json-file"
       options:
@@ -25,13 +35,15 @@ services:
     container_name: panaderia-duran-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: panaderia_duran
-      POSTGRES_USER: panaderia_user
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-panaderia_duran}
+      POSTGRES_USER: ${DB_USER:-panaderia_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
     volumes:
       - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${DB_EXTERNAL_PORT:-5432}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U panaderia_user -d panaderia_duran"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-panaderia_user} -d ${DB_NAME:-panaderia_duran}"]
       interval: 5s
       timeout: 5s
       retries: 5
