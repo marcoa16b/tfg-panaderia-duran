@@ -82,6 +82,8 @@ platformdirs==4.5.1
     #   reflex-hosting-cli
 psutil==7.2.2 ; sys_platform == 'win32'
     # via reflex
+psycopg2-binary==2.9.12
+    # via dev
 pyasn1==0.6.3
     # via
     #   python-jose
@@ -96,6 +98,8 @@ pydantic-core==2.41.5
     # via pydantic
 pygments==2.19.2
     # via rich
+python-dotenv==1.2.2
+    # via dev
 python-engineio==4.13.1
     # via python-socketio
 python-jose==3.5.0
