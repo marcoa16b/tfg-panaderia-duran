@@ -15,4 +15,6 @@ config = rx.Config(
     db_url=os.environ.get("DATABASE_URL", "sqlite:///reflex.db"),
     frontend_port=int(os.environ.get("APP_PORT", 3020)),
     backend_port=int(os.environ.get("BACKEND_PORT", 8020)),
+    cors_allowed_origins=["https://duran.nandev.online"],
+    deploy_url="https://duran.nandev.online",
 )
