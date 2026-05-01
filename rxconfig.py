@@ -21,7 +21,7 @@ cors_origins = (
     ]
 )
 
-config = rx.Config(
+config_kwargs = dict(
     app_name="dev",
     plugins=[
         rx.plugins.SitemapPlugin(),
@@ -32,9 +32,9 @@ config = rx.Config(
     backend_port=int(os.environ.get("BACKEND_PORT", 8020)),
     cors_allowed_origins=cors_origins,
     deploy_url="https://duran.nandev.online",
-    api_url=(
-        "https://duran-api.nandev.online"
-        if ENV == "production"
-        else None # Local: Reflex usa la misma host
-    ),
 )
+
+if ENV == "production":
+    config_kwargs["api_url"] = "https://duran-api.nandev.online"
+
+config = rx.Config(**config_kwargs)
