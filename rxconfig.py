@@ -28,13 +28,8 @@ config_kwargs = dict(
         rx.plugins.TailwindV4Plugin(),
     ],
     db_url=os.environ.get("DATABASE_URL", "sqlite:///reflex.db"),
-    frontend_port=int(os.environ.get("APP_PORT", 3020)),
-    backend_port=int(os.environ.get("BACKEND_PORT", 8020)),
-    cors_allowed_origins=cors_origins,
-    deploy_url="https://duran.nandev.online",
+    # cors_allowed_origins=["*"],
+    api_url="https://duran.nandev.online",
 )
-
-if ENV == "production":
-    config_kwargs["api_url"] = "https://duran-api.nandev.online"
 
 config = rx.Config(**config_kwargs)

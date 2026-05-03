@@ -1,76 +1,35 @@
 services:
-  app:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-panaderia_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-panaderia_duran}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: panaderia-duran-app
-    restart: unless-stopped
-    expose:
-      - "${APP_PORT:-3000}"
-      - "${BACKEND_PORT:-8000}"
+    restart: always
     environment:
-      APP_ENV: ${APP_ENV:-production}
-      DATABASE_URL: postgresql://${DB_USER:-panaderia_user}:${DB_PASSWORD}@db:${DB_PORT:-5432}/${DB_NAME:-panaderia_duran}
-      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY is required}
-      LOG_LEVEL: ${LOG_LEVEL:-INFO}
-      DEBUG: ${DEBUG:-false}
-      APP_PORT: ${APP_PORT:-3000}
-      BACKEND_PORT: ${BACKEND_PORT:-8000}
-      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
-      SEED_DEMO: ${SEED_DEMO:-false}
+      API_URL: https://duran.nandev.online
     depends_on:
-      db:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 15s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+      - db
 
-  db:
-    image: postgres:16-alpine
-    container_name: panaderia-duran-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${DB_NAME:-panaderia_duran}
-      POSTGRES_USER: ${DB_USER:-panaderia_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    expose:
-      - "5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-panaderia_user} -d ${DB_NAME:-panaderia_duran}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  tunnel:
-    image: cloudflare/cloudflared:latest
-    container_name: panaderia-duran-tunnel
-    restart: unless-stopped
-    command: tunnel --no-autoupdate run
-    environment:
-      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?TUNNEL_TOKEN is required}
+  frontend:
+    build:
+      context: .
+      dockerfile: web.Dockerfile
+      args:
+        API_URL: https://duran.nandev.online
+    restart: always
+    ports:
+      - "3004:3000"
     depends_on:
-      app:
-        condition: service_healthy
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+      - backend
 
 volumes:
   pgdata:
