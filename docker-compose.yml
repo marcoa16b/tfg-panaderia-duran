@@ -41,10 +41,10 @@ services:
       - dokploy-network  # para que Traefik lo descubra
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mi-app.rule=Host(`tudominio.com`)"
-      - "traefik.http.routers.mi-app.entrypoints=websecure"
-      - "traefik.http.routers.mi-app.tls.certresolver=letsencrypt"
-      - "traefik.http.services.mi-app.loadbalancer.server.port=3000"
+      - "traefik.http.routers.tfg-panaderia.rule=Host(`duran.nandev.online`)"
+      - "traefik.http.routers.tfg-panaderia.entrypoints=websecure"
+      - "traefik.http.routers.tfg-panaderia.tls.certresolver=letsencrypt"
+      - "traefik.http.services.tfg-panaderia.loadbalancer.server.port=3000"
       - "traefik.docker.network=dokploy-network"
 
 networks:
