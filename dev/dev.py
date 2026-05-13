@@ -1,6 +1,7 @@
 """Welcome to Reflex! This file outlines the steps to create a basic app."""
 
 import logging
+import os
 
 import reflex as rx
 
@@ -42,7 +43,8 @@ class State(rx.State):
     """The app state."""
 
 
-bootstrap_app()
+if os.environ.get("REFLEX_SKIP_BOOTSTRAP", "0") != "1":
+    bootstrap_app()
 
 app = rx.App(
     stylesheets=[

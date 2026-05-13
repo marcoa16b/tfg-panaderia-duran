@@ -27,7 +27,7 @@ RUN $uv pip install --python /app/.venv/bin/python -r requirements.txt && chmod 
 RUN reflex init
 
 # Export static copy of frontend to /app/.web/build/client
-RUN reflex export --frontend-only --no-zip
+RUN REFLEX_SKIP_BOOTSTRAP=1 reflex export --frontend-only --no-zip
 
 # Copy static files out of /app to save space in backend image
 RUN mv .web/build/client /tmp/client
