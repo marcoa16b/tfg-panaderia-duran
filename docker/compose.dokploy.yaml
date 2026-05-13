@@ -4,6 +4,9 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+      args:
+        API_URL: ${API_URL}
+        APP_ENV: production
     environment:
       DATABASE_URL: ${NEON_DB}
       REFLEX_DB_URL: ${NEON_DB}

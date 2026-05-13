@@ -23,6 +23,11 @@ RUN $uv venv
 # Install app requirements and reflex inside virtualenv
 RUN $uv pip install --python /app/.venv/bin/python -r requirements.txt && chmod -R a+rx /app/.venv/bin
 
+ARG API_URL=https://duranv2.nandev.online
+ARG APP_ENV=production
+ENV API_URL=$API_URL
+ENV APP_ENV=$APP_ENV
+
 # Deploy templates and prepare app
 RUN reflex init
 
