@@ -28,7 +28,7 @@ config_kwargs = dict(
         rx.plugins.TailwindV4Plugin(),
     ],
     db_url=os.environ.get("DATABASE_URL", "sqlite:///reflex.db"),
-    # cors_allowed_origins=["*"],
+    cors_allowed_origins=["*"],
     api_url="https://duran.nandev.online",
 )
 
