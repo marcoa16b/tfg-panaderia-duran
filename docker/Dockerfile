@@ -21,7 +21,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN $uv venv
 
 # Install app requirements and reflex inside virtualenv
-RUN $uv pip install -r requirements.txt && chmod -R a+rx /app/.venv/bin
+RUN $uv pip install --python /app/.venv/bin/python -r requirements.txt && chmod -R a+rx /app/.venv/bin
 
 # Deploy templates and prepare app
 RUN reflex init
@@ -48,5 +48,5 @@ ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1
 STOPSIGNAL SIGKILL
 
 # Always apply migrations before starting the backend.
-CMD [ -d alembic ] && python -m reflex db migrate; \
-    exec python -m reflex run --env prod --backend-only
+CMD [ -d alembic ] && /app/.venv/bin/python -m reflex db migrate; \
+    exec /app/.venv/bin/python -m reflex run --env prod --backend-only
