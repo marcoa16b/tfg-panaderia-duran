@@ -2,7 +2,8 @@ services:
   app:
     image: local/reflex-app
     build:
-      context: .
+      context: ..
+      dockerfile: docker/Dockerfile
     environment:
       REFLEX_DB_URL: postgresql+psycopg://postgres:${POSTGRES_PASSWORD}@db/postgres
       REFLEX_REDIS_URL: redis://redis:6379
