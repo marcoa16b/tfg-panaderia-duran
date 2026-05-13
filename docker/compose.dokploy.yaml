@@ -19,8 +19,6 @@ services:
     build:
       context: .
       dockerfile: Caddy.Dockerfile
-    environment:
-      DOMAIN: ${DOMAIN:-localhost}
     ports:
       - "8080:80"
     volumes:
