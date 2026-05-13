@@ -5,7 +5,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     environment:
-      REFLEX_DB_URL: postgresql+psycopg://postgres:${POSTGRES_PASSWORD}@db/postgres
+      REFLEX_DB_URL: postgresql+psycopg2://postgres:${POSTGRES_PASSWORD}@db/postgres
       REFLEX_REDIS_URL: redis://redis:6379
     volumes:
       - db-data:/app/data
