@@ -35,7 +35,7 @@ config_kwargs = dict(
         ),
     ),
     cors_allowed_origins=["*"],
-    api_url="https://duran.nandev.online",
+    api_url=os.environ.get("API_URL", "https://duranv2.nandev.online"),
 )
 
 config = rx.Config(**config_kwargs)
