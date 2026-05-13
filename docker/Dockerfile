@@ -41,12 +41,13 @@ RUN adduser --disabled-password --home /app reflex
 COPY --chown=reflex --from=init /app /app
 # Install libpq-dev for psycopg (skip if not using postgres).
 RUN apt-get update -y && apt-get install -y libpq-dev && rm -rf /var/lib/apt/lists/*
+RUN python -m pip install --no-cache-dir -r /app/requirements.txt
 USER reflex
-ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1
+ENV PYTHONUNBUFFERED=1
 
 # Needed until Reflex properly passes SIGTERM on backend.
 STOPSIGNAL SIGKILL
 
 # Always apply migrations before starting the backend.
-CMD [ -d alembic ] && /app/.venv/bin/python -m reflex db migrate; \
-    exec /app/.venv/bin/python -m reflex run --env prod --backend-only
+CMD [ -d alembic ] && python -m reflex db migrate; \
+    exec python -m reflex run --env prod --backend-only
