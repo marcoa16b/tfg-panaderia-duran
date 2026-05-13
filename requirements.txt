@@ -112,7 +112,7 @@ redis==7.1.1
     # via reflex
 reflex==0.8.26
     # via dev
-reflex-hosting-cli==0.1.61
+reflex-hosting-cli==0.1.63
     # via reflex
 reportlab==4.5.0
     # via dev
