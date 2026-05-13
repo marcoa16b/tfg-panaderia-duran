@@ -1,6 +1,12 @@
 import os
 
-DATABASE_URL: str = os.environ.get("DATABASE_URL", "sqlite:///reflex.db")
+DATABASE_URL: str = os.environ.get(
+    "DATABASE_URL",
+    os.environ.get(
+        "NEON_DB",
+        "postgresql+psycopg2://postgres:postgres@localhost:5432/postgres",
+    ),
+)
 SECRET_KEY: str = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
 ALGORITHM: str = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES: int = int(

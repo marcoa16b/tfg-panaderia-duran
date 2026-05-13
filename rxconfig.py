@@ -27,7 +27,13 @@ config_kwargs = dict(
         rx.plugins.SitemapPlugin(),
         rx.plugins.TailwindV4Plugin(),
     ],
-    db_url=os.environ.get("DATABASE_URL", "sqlite:///reflex.db"),
+    db_url=os.environ.get(
+        "DATABASE_URL",
+        os.environ.get(
+            "NEON_DB",
+            "postgresql+psycopg2://postgres:postgres@localhost:5432/postgres",
+        ),
+    ),
     cors_allowed_origins=["*"],
     api_url="https://duran.nandev.online",
 )
